@@ -85,18 +85,32 @@ def seed_sample_data():
         return
 
     stadiums = [
-        Stadium(name="MetLife Stadium", city="East Rutherford", capacity=82500),
-        Stadium(name="AT&T Stadium", city="Arlington", capacity=80000),
-        Stadium(name="Estadio Azteca", city="Mexico City", capacity=87523),
-        Stadium(name="Mercedes-Benz Stadium", city="Atlanta", capacity=71000),
+        Stadium(name="Estadio Azteca / Mexico City Stadium", city="Mexico City", capacity=87523),
+        Stadium(name="BMO Field / Toronto Stadium", city="Toronto", capacity=45000),
+        Stadium(name="SoFi Stadium / Los Angeles Stadium", city="Inglewood", capacity=70240),
+        Stadium(name="MetLife Stadium / New York New Jersey Stadium", city="East Rutherford", capacity=82500),
+        Stadium(name="AT&T Stadium / Dallas Stadium", city="Arlington", capacity=80000),
+        Stadium(name="Mercedes-Benz Stadium / Atlanta Stadium", city="Atlanta", capacity=71000),
+        Stadium(name="Estadio Akron / Guadalajara Stadium", city="Zapopan", capacity=48071),
+        Stadium(name="Estadio BBVA / Monterrey Stadium", city="Guadalupe", capacity=53500),
+        Stadium(name="Gillette Stadium / Boston Stadium", city="Foxborough", capacity=65878),
+        Stadium(name="Lincoln Financial Field / Philadelphia Stadium", city="Philadelphia", capacity=67594),
+        Stadium(name="Hard Rock Stadium / Miami Stadium", city="Miami Gardens", capacity=65326),
     ]
 
+    # Sample matches based on current public World Cup 2026 schedule information.
+    # This is demo seed data, not the complete official schedule.
     matches_data = [
-        ("Argentina", "Brazil", datetime(2026, 6, 12, 20, 0), stadiums[0]),
-        ("France", "Germany", datetime(2026, 6, 14, 18, 0), stadiums[1]),
-        ("Mexico", "Canada", datetime(2026, 6, 16, 21, 0), stadiums[2]),
-        ("USA", "England", datetime(2026, 6, 18, 19, 30), stadiums[3]),
-        ("Spain", "Argentina", datetime(2026, 6, 21, 20, 30), stadiums[0]),
+        ("Mexico", "South Africa", datetime(2026, 6, 11, 21, 0), stadiums[0]),
+        ("Korea Republic", "Czechia", datetime(2026, 6, 11, 18, 0), stadiums[7]),
+        ("Canada", "Bosnia and Herzegovina", datetime(2026, 6, 12, 20, 0), stadiums[1]),
+        ("USA", "Paraguay", datetime(2026, 6, 12, 18, 0), stadiums[2]),
+        ("Czechia", "Mexico", datetime(2026, 6, 18, 21, 0), stadiums[6]),
+        ("South Africa", "Korea Republic", datetime(2026, 6, 19, 19, 0), stadiums[5]),
+        ("France", "Norway", datetime(2026, 6, 20, 20, 0), stadiums[3]),
+        ("England", "Panama", datetime(2026, 6, 21, 18, 0), stadiums[4]),
+        ("Argentina", "Jordan", datetime(2026, 6, 22, 20, 30), stadiums[10]),
+        ("Colombia", "Portugal", datetime(2026, 6, 23, 19, 30), stadiums[9]),
     ]
 
     matches = []
@@ -107,10 +121,13 @@ def seed_sample_data():
             match_date=match_date,
             stadium=stadium,
         )
+        regular_capacity = int(stadium.capacity * 0.55)
+        premium_capacity = int(stadium.capacity * 0.18)
+        vip_capacity = int(stadium.capacity * 0.03)
         match.seat_types = [
-            SeatType(name="Regular", price=90.0, total_seats=30000),
-            SeatType(name="Premium", price=180.0, total_seats=8000),
-            SeatType(name="VIP", price=350.0, total_seats=1500),
+            SeatType(name="Regular", price=120.0, total_seats=regular_capacity),
+            SeatType(name="Premium", price=280.0, total_seats=premium_capacity),
+            SeatType(name="VIP", price=650.0, total_seats=vip_capacity),
         ]
         matches.append(match)
 
