@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}About{% endblock %}
+
+{% block content %}
+<section class="panel about-panel">
+    <p class="eyebrow">Project overview</p>
+    <h1>About this demo app</h1>
+
+    <p>
+        This is a simple World Cup seat booking demo app. It is built mainly to
+        demonstrate a DevOps workflow, not to be a full production ticket system.
+    </p>
+
+    <h2>What regular users can do</h2>
+    <ul>
+        <li>Browse World Cup inspired matches.</li>
+        <li>Choose a match and seat type.</li>
+        <li>Create a booking and receive a booking code.</li>
+        <li>Manage a booking with booking code and email.</li>
+        <li>Cancel an existing booking.</li>
+    </ul>
+
+    <h2>What admin can do</h2>
+    <p>
+        Admin can view all bookings and basic match statistics, including booked,
+        cancelled, and available seats.
+    </p>
+
+    <h2>Technical flow</h2>
+    <p>Browser/User -> Flask -> SQLAlchemy -> MySQL</p>
+
+    <h2>DevOps flow</h2>
+    <p>Developer -> GitHub -> GitHub Actions -> Pytest -> Docker Build -> Docker Hub -> Deployment</p>
+</section>
+{% endblock %}

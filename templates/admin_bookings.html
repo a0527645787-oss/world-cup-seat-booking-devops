@@ -12,6 +12,39 @@
         <a class="button secondary-button" href="{{ url_for('admin_logout') }}">Logout</a>
     </div>
 
+    <h2>Match statistics</h2>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Match</th>
+                    <th>Stadium</th>
+                    <th>Total seats</th>
+                    <th>Active booked seats</th>
+                    <th>Cancelled seats</th>
+                    <th>Available seats</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in match_statistics %}
+                    <tr>
+                        <td>{{ item.match.home_team }} vs {{ item.match.away_team }}</td>
+                        <td>{{ item.match.stadium.name }}</td>
+                        <td>{{ item.total_seats }}</td>
+                        <td>{{ item.active_booked_seats }}</td>
+                        <td>{{ item.cancelled_seats }}</td>
+                        <td>{{ item.available_seats }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="empty-state">No matches yet.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <h2>Bookings</h2>
     <div class="table-wrap">
         <table>
             <thead>

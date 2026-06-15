@@ -38,8 +38,18 @@ def client():
             match=match,
             seat_type=match.seat_types[0],
         )
+        cancelled_booking = Booking(
+            booking_code="TEST-CANCELLED-123",
+            customer_name="Cancelled Customer",
+            customer_email="cancelled@example.com",
+            seats_count=1,
+            is_cancelled=True,
+            match=match,
+            seat_type=match.seat_types[0],
+        )
         db.session.add(match)
         db.session.add(booking)
+        db.session.add(cancelled_booking)
         db.session.commit()
 
     yield app.test_client()
@@ -80,6 +90,13 @@ def test_manage_booking_page_returns_200(client):
     assert b"Manage your booking" in response.data
 
 
+def test_about_page_returns_200(client):
+    response = client.get("/about")
+
+    assert response.status_code == 200
+    assert b"World Cup seat booking demo app" in response.data
+
+
 def test_invalid_booking_lookup_shows_error(client):
     response = client.post(
         "/manage-booking",
@@ -109,3 +126,14 @@ def test_cancel_route_sets_booking_cancelled(client):
     with app.app_context():
         booking = Booking.query.filter_by(booking_code="TEST-CODE-123").first()
         assert booking.is_cancelled is True
+
+
+def test_admin_bookings_page_renders_statistics(client):
+    with client.session_transaction() as sess:
+        sess["admin_logged_in"] = True
+
+    response = client.get("/admin/bookings")
+
+    assert response.status_code == 200
+    assert b"Match statistics" in response.data
+    assert b"Active booked seats" in response.data

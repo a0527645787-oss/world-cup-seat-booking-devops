@@ -157,6 +157,33 @@ def admin_required(view_function):
 
     return wrapped_view
 
+
+def build_match_statistics():
+    statistics = []
+    matches = Match.query.order_by(Match.match_date).all()
+    for match in matches:
+        total_seats = sum(seat_type.total_seats for seat_type in match.seat_types)
+        active_booked_seats = sum(
+            booking.seats_count
+            for booking in match.bookings
+            if not booking.is_cancelled
+        )
+        cancelled_seats = sum(
+            booking.seats_count
+            for booking in match.bookings
+            if booking.is_cancelled
+        )
+        statistics.append({
+            "match": match,
+            "total_seats": total_seats,
+            "active_booked_seats": active_booked_seats,
+            "cancelled_seats": cancelled_seats,
+            "available_seats": total_seats - active_booked_seats,
+        })
+
+    return statistics
+
+
 # create the DB on demand
 @app.before_first_request
 def create_tables():
@@ -173,6 +200,11 @@ def index():
 @app.route('/health', methods=["GET"])
 def health():
     return {"status": "ok"}, 200
+
+
+@app.route('/about', methods=["GET"])
+def about():
+    return render_template("about.html")
 
 
 @app.route('/matches/<int:match_id>', methods=["GET"])
@@ -288,7 +320,12 @@ def admin_logout():
 @admin_required
 def admin_bookings():
     bookings = Booking.query.order_by(Booking.created_at.desc()).all()
-    return render_template("admin_bookings.html", bookings=bookings)
+    match_statistics = build_match_statistics()
+    return render_template(
+        "admin_bookings.html",
+        bookings=bookings,
+        match_statistics=match_statistics,
+    )
 
 if __name__ == "__main__":
     #db.create_all()

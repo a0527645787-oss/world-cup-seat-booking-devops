@@ -315,6 +315,14 @@ th {
     margin: 0;
 }
 
+.about-panel {
+    max-width: 820px;
+}
+
+.about-panel li {
+    margin-bottom: 8px;
+}
+
 @media (max-width: 640px) {
     .site-header,
     .match-card-header,
