@@ -1,0 +1,40 @@
+# Production-style Compose file.
+# This file runs the already published Flask image from Docker Hub.
+
+services:
+  app:
+    # Use the image that GitHub Actions pushed to Docker Hub.
+    image: shlomodevops/devops-final-projectshlomo:latest
+    container_name: flask_app_prod
+    restart: unless-stopped
+    environment:
+      # Flask database connection settings.
+      DB_HOST: mysql
+      DB_NAME: flask
+      DB_USER: flask
+      DB_PASSWORD: change-me
+    depends_on:
+      # Start MySQL before starting the Flask container.
+      - mysql
+    ports:
+      # Host port 5001 -> container port 5000.
+      - "5001:5000"
+
+  mysql:
+    # Use MySQL 8.0 for the database container.
+    image: mysql:8.0
+    container_name: mysql_prod
+    restart: unless-stopped
+    environment:
+      # Demo credentials for local project use.
+      MYSQL_ROOT_PASSWORD: change-root-password
+      MYSQL_DATABASE: flask
+      MYSQL_USER: flask
+      MYSQL_PASSWORD: change-me
+    volumes:
+      # Keep MySQL data even if the container is recreated.
+      - mysql-prod-data:/var/lib/mysql
+
+volumes:
+  mysql-prod-data:
+    driver: local
