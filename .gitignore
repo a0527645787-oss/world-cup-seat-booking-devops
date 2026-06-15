@@ -1,5 +1,6 @@
 .DS_Store
 __pycache__/
+**/__pycache__/
 *.py[cod]
 *.pyo
 
@@ -9,6 +10,7 @@ env/
 
 .env
 *.env
+db/cred.env
 !*.env.example
 
 .idea/
