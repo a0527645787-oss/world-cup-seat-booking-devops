@@ -1,6 +1,9 @@
 from datetime import datetime
+import os
 
 import pytest
+
+os.environ["TESTING"] = "true"
 
 from app import Match, SeatType, Stadium, app, db
 
@@ -8,7 +11,6 @@ from app import Match, SeatType, Stadium, app, db
 @pytest.fixture()
 def client():
     app.config["TESTING"] = True
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
 
     with app.app_context():
         db.drop_all()

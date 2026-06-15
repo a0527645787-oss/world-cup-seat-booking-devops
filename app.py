@@ -6,12 +6,16 @@ from flask_sqlalchemy import SQLAlchemy
 import os
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "dev-secret-key")
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://{}:{}@{}/{}'.format(
-    os.getenv('DB_USER', 'flask'),
-    os.getenv('DB_PASSWORD', 'change-me'),
-    os.getenv('DB_HOST', 'mysql'),
-    os.getenv('DB_NAME', 'flask')
-)
+app.config["TESTING"] = os.getenv("TESTING", "").lower() == "true"
+if app.config["TESTING"]:
+    app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///:memory:"
+else:
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://{}:{}@{}/{}'.format(
+        os.getenv('DB_USER', 'flask'),
+        os.getenv('DB_PASSWORD', 'change-me'),
+        os.getenv('DB_HOST', 'mysql'),
+        os.getenv('DB_NAME', 'flask')
+    )
 db = SQLAlchemy(app)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin123")
