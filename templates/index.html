@@ -1,27 +1,41 @@
-{% extends 'base.html' %}
-{% block head %}
-<title>Todo app</title>
-{% endblock %}
+{% extends "base.html" %}
 
-{% block body %}
-<h1>Todo app</h1>
-<div class="box">
-    <form action="/add" method="post">
-        <label for="title">Todo title</label>
-        <input type="text" name="title" placeholder="What needs to be done?"><br>
-        <button type="submit">Add</button>
-    </form>
+{% block title %}World Cup Seat Booking{% endblock %}
 
-    {% for todo in list_todo %}
-        <p>{{ todo.id }} | {{ todo.title }}</p>
-        {% if todo.complete %}
-        <span>Complete</span>
-        {% else %}
-            <span>Not complete</span>
-        {% endif %}
-        <a href="/update/{{ todo.id }}">Update</a>
-        <a href="/delete/{{ todo.id }}">Delete</a>
+{% block content %}
+<section class="hero">
+    <p class="eyebrow">World Cup 2026 inspired</p>
+    <h1>Choose your match seats</h1>
+    <p class="hero-text">
+        Browse upcoming matches, compare seat types, and get ready for the next booking step.
+    </p>
+</section>
+
+<section class="match-grid" aria-label="Available matches">
+    {% for match in matches %}
+        <article class="match-card">
+            <div class="match-card-header">
+                <span class="match-date">{{ match.match_date.strftime("%d %b %Y, %H:%M") }}</span>
+                <span class="stadium-city">{{ match.stadium.city }}</span>
+            </div>
+
+            <h2>{{ match.home_team }} vs {{ match.away_team }}</h2>
+            <p class="stadium-name">{{ match.stadium.name }}</p>
+
+            <div class="seat-list">
+                {% for seat_type in match.seat_types %}
+                    <div class="seat-row">
+                        <div>
+                            <strong>{{ seat_type.name }}</strong>
+                            <span>{{ seat_type.available_seats }} seats available</span>
+                        </div>
+                        <span class="seat-price">${{ "%.0f"|format(seat_type.price) }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <a class="button" href="#">Choose seats</a>
+        </article>
     {% endfor %}
-</div>
+</section>
 {% endblock %}
-

@@ -13,6 +13,8 @@ services:
       DB_NAME: flask
       DB_USER: flask
       DB_PASSWORD: change-me
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
+      SECRET_KEY: ${SECRET_KEY:-dev-secret-key}
     depends_on:
       # Start MySQL before starting the Flask container.
       - mysql

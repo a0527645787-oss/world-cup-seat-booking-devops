@@ -1,9 +1,11 @@
 from datetime import datetime
+from functools import wraps
 from uuid import uuid4
-from flask import Flask
+from flask import Flask, redirect, render_template, request, session, url_for
 from flask_sqlalchemy import SQLAlchemy
 import os
 app = Flask(__name__)
+app.secret_key = os.getenv("SECRET_KEY", "dev-secret-key")
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://{}:{}@{}/{}'.format(
     os.getenv('DB_USER', 'flask'),
     os.getenv('DB_PASSWORD', 'change-me'),
@@ -12,6 +14,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://{}:{}@{}/{}'.format(
 )
 db = SQLAlchemy(app)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin123")
 
 class Stadium(db.Model):
     __tablename__ = "stadiums"
@@ -123,6 +126,16 @@ def seed_sample_data():
     db.session.add_all(stadiums + matches + [sample_booking])
     db.session.commit()
 
+
+def admin_required(view_function):
+    @wraps(view_function)
+    def wrapped_view(*args, **kwargs):
+        if not session.get("admin_logged_in"):
+            return redirect(url_for("admin_login"))
+        return view_function(*args, **kwargs)
+
+    return wrapped_view
+
 # create the DB on demand
 @app.before_first_request
 def create_tables():
@@ -133,34 +146,38 @@ def create_tables():
 
 @app.route('/', methods=["GET"])
 def index():
-    matches = Match.query.all()
-    return {
-        "message": "Match seat booking app - basic API is ready",
-        "matches": [
-            {
-                "id": match.id,
-                "home_team": match.home_team,
-                "away_team": match.away_team,
-                "match_date": match.match_date.isoformat(),
-                "stadium": match.stadium.name,
-                "seat_types": [
-                    {
-                        "id": seat_type.id,
-                        "name": seat_type.name,
-                        "price": seat_type.price,
-                        "total_seats": seat_type.total_seats,
-                        "available_seats": seat_type.available_seats,
-                    }
-                    for seat_type in match.seat_types
-                ],
-            }
-            for match in matches
-        ],
-    }
+    matches = Match.query.order_by(Match.match_date).all()
+    return render_template("index.html", matches=matches)
 
 @app.route('/health', methods=["GET"])
 def health():
     return {"status": "ok"}, 200
+
+
+@app.route('/admin/login', methods=["GET", "POST"])
+def admin_login():
+    error = None
+    if request.method == "POST":
+        password = request.form.get("password", "")
+        if password == ADMIN_PASSWORD:
+            session["admin_logged_in"] = True
+            return redirect(url_for("admin_bookings"))
+        error = "Invalid admin password"
+
+    return render_template("admin_login.html", error=error)
+
+
+@app.route('/admin/logout', methods=["GET"])
+def admin_logout():
+    session.pop("admin_logged_in", None)
+    return redirect(url_for("index"))
+
+
+@app.route('/admin/bookings', methods=["GET"])
+@admin_required
+def admin_bookings():
+    bookings = Booking.query.order_by(Booking.created_at.desc()).all()
+    return render_template("admin_bookings.html", bookings=bookings)
 
 if __name__ == "__main__":
     #db.create_all()

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Bookings{% endblock %}
+
+{% block content %}
+<section class="panel">
+    <div class="panel-heading">
+        <div>
+            <p class="eyebrow">Admin</p>
+            <h1>Bookings</h1>
+        </div>
+        <a class="button secondary-button" href="{{ url_for('admin_logout') }}">Logout</a>
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Customer</th>
+                    <th>Email</th>
+                    <th>Match</th>
+                    <th>Seat type</th>
+                    <th>Seats</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in bookings %}
+                    <tr>
+                        <td>{{ booking.booking_code }}</td>
+                        <td>{{ booking.customer_name }}</td>
+                        <td>{{ booking.customer_email }}</td>
+                        <td>{{ booking.match.home_team }} vs {{ booking.match.away_team }}</td>
+                        <td>{{ booking.seat_type.name }}</td>
+                        <td>{{ booking.seats_count }}</td>
+                        <td>{{ "Cancelled" if booking.is_cancelled else "Active" }}</td>
+                        <td>{{ booking.created_at.strftime("%d %b %Y, %H:%M") }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="8" class="empty-state">No bookings yet.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
