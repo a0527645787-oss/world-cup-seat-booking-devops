@@ -10,9 +10,9 @@ services:
     environment:
       # Flask database connection settings.
       DB_HOST: mysql
-      DB_NAME: flask
-      DB_USER: flask
-      DB_PASSWORD: change-me
+      DB_NAME: ${DB_NAME:-flask}
+      DB_USER: ${DB_USER:-flask}
+      DB_PASSWORD: ${DB_PASSWORD:-change-me}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
       SECRET_KEY: ${SECRET_KEY:-dev-secret-key}
     depends_on:
@@ -29,10 +29,10 @@ services:
     restart: unless-stopped
     environment:
       # Demo credentials for local project use.
-      MYSQL_ROOT_PASSWORD: change-root-password
-      MYSQL_DATABASE: flask
-      MYSQL_USER: flask
-      MYSQL_PASSWORD: change-me
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-change-root-password}
+      MYSQL_DATABASE: ${DB_NAME:-flask}
+      MYSQL_USER: ${DB_USER:-flask}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-change-me}
     volumes:
       # Keep MySQL data even if the container is recreated.
       - mysql-prod-data:/var/lib/mysql
