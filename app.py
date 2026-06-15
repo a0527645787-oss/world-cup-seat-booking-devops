@@ -1,7 +1,7 @@
 from datetime import datetime
 from functools import wraps
 from uuid import uuid4
-from flask import abort, redirect, render_template, request, session, url_for
+from flask import Flask, abort, redirect, render_template, request, session, url_for
 from flask_sqlalchemy import SQLAlchemy
 import os
 app = Flask(__name__)
