@@ -234,6 +234,37 @@ def booking_success(booking_code):
     )
 
 
+@app.route('/manage-booking', methods=["GET", "POST"])
+def manage_booking():
+    error = None
+    if request.method == "POST":
+        booking_code = request.form.get("booking_code", "").strip()
+        customer_email = request.form.get("customer_email", "").strip()
+        booking = Booking.query.filter_by(
+            booking_code=booking_code,
+            customer_email=customer_email,
+        ).first()
+
+        if booking:
+            return redirect(url_for("booking_success", booking_code=booking.booking_code))
+
+        error = "Booking was not found. Please check your booking code and email."
+
+    return render_template("manage_booking.html", error=error)
+
+
+@app.route('/bookings/<booking_code>/cancel', methods=["POST"])
+def cancel_booking(booking_code):
+    booking = Booking.query.filter_by(booking_code=booking_code).first()
+    if booking is None:
+        abort(404)
+
+    booking.is_cancelled = True
+    db.session.commit()
+
+    return redirect(url_for("booking_success", booking_code=booking.booking_code))
+
+
 @app.route('/admin/login', methods=["GET", "POST"])
 def admin_login():
     error = None

@@ -5,7 +5,7 @@ import pytest
 
 os.environ["TESTING"] = "true"
 
-from app import Match, SeatType, Stadium, app, db
+from app import Booking, Match, SeatType, Stadium, app, db
 
 
 @pytest.fixture()
@@ -30,7 +30,16 @@ def client():
             SeatType(name="Regular", price=100.0, total_seats=100),
             SeatType(name="VIP", price=500.0, total_seats=10),
         ]
+        booking = Booking(
+            booking_code="TEST-CODE-123",
+            customer_name="Test Customer",
+            customer_email="customer@example.com",
+            seats_count=2,
+            match=match,
+            seat_type=match.seat_types[0],
+        )
         db.session.add(match)
+        db.session.add(booking)
         db.session.commit()
 
     yield app.test_client()
@@ -62,3 +71,41 @@ def test_match_detail_page_returns_200(client):
 
     assert response.status_code == 200
     assert b"Book seats" in response.data
+
+
+def test_manage_booking_page_returns_200(client):
+    response = client.get("/manage-booking")
+
+    assert response.status_code == 200
+    assert b"Manage your booking" in response.data
+
+
+def test_invalid_booking_lookup_shows_error(client):
+    response = client.post(
+        "/manage-booking",
+        data={
+            "booking_code": "BAD-CODE",
+            "customer_email": "missing@example.com",
+        },
+    )
+
+    assert response.status_code == 200
+    assert b"Booking was not found" in response.data
+
+
+def test_booking_detail_page_returns_200(client):
+    response = client.get("/bookings/TEST-CODE-123")
+
+    assert response.status_code == 200
+    assert b"TEST-CODE-123" in response.data
+    assert b"Active" in response.data
+
+
+def test_cancel_route_sets_booking_cancelled(client):
+    response = client.post("/bookings/TEST-CODE-123/cancel")
+
+    assert response.status_code == 302
+
+    with app.app_context():
+        booking = Booking.query.filter_by(booking_code="TEST-CODE-123").first()
+        assert booking.is_cancelled is True

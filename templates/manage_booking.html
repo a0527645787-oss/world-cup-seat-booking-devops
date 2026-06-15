@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Booking{% endblock %}
+
+{% block content %}
+<section class="panel narrow-panel">
+    <p class="eyebrow">Customer booking</p>
+    <h1>Manage your booking</h1>
+    <p>Enter your booking code and email to view or cancel your booking.</p>
+
+    {% if error %}
+        <p class="error-message">{{ error }}</p>
+    {% endif %}
+
+    <form class="booking-form" method="post" action="{{ url_for('manage_booking') }}">
+        <label for="booking_code">Booking code</label>
+        <input id="booking_code" name="booking_code" type="text" required>
+
+        <label for="customer_email">Email</label>
+        <input id="customer_email" name="customer_email" type="email" required>
+
+        <button class="button" type="submit">Find booking</button>
+    </form>
+</section>
+{% endblock %}

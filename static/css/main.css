@@ -203,6 +203,16 @@ p {
     background: #1f2937;
 }
 
+.danger-button {
+    width: 100%;
+    margin-bottom: 12px;
+    background: #dc2626;
+}
+
+.danger-button:hover {
+    background: #991b1b;
+}
+
 .panel {
     padding: 28px;
 }

@@ -12,6 +12,7 @@
             <a class="brand" href="{{ url_for('index') }}">World Cup Seats</a>
             <nav class="site-nav">
                 <a href="{{ url_for('index') }}">Matches</a>
+                <a href="{{ url_for('manage_booking') }}">Manage Booking</a>
                 {% if session.get("admin_logged_in") %}
                     <a href="{{ url_for('admin_bookings') }}">Admin</a>
                     <a href="{{ url_for('admin_logout') }}">Logout</a>
