@@ -1,241 +1,479 @@
-# Flask TODO DevOps Final Project
+# World Cup Seat Booking DevOps Project
 
-## 1. סקירת הפרויקט
+<div dir="rtl">
 
-זהו פרויקט גמר פשוט ב-DevOps.
-הבסיס של הפרויקט הוא אפליקציית TODO קטנה שנכתבה עם Flask.
+## תיאור קצר של הפרויקט
 
-המטרה היא לא לבנות אפליקציה גדולה ומורכבת, אלא להראות תהליך DevOps מלא סביב אפליקציה פשוטה:
+זהו פרויקט גמר ב-DevOps שמבוסס על אפליקציית Flask פשוטה עם מסד נתונים MySQL.
 
-- הרצת אפליקציה
-- חיבור למסד נתונים
-- בדיקות אוטומטיות
-- Docker
-- Docker Compose
-- GitHub Actions
-- בניית Docker image
-- העלאה ל-Docker Hub
+האפליקציה היא מערכת דמו להזמנת מושבים למשחקי כדורגל בסגנון World Cup. משתמשים יכולים לראות משחקים, לבחור סוג מושב, ליצור הזמנה, לקבל קוד הזמנה, לנהל הזמנה קיימת לפי קוד הזמנה ואימייל, וגם לבטל הזמנה.
 
-## 2. מטרת הפרויקט
+המטרה המרכזית של הפרויקט היא לא לבנות מערכת כרטיסים גדולה ומורכבת, אלא להדגים תהליך DevOps מלא סביב אפליקציה פשוטה וברורה.
 
-מטרת הפרויקט היא להראות איך מפתח עובד בצורה מסודרת:
+## תכונות האפליקציה
 
-1. כותבים קוד.
-2. שומרים את הקוד ב-GitHub.
-3. GitHub Actions מריץ בדיקות.
-4. אם הבדיקות עוברות, נבנה Docker image.
-5. ה-image נשלח ל-Docker Hub.
+- עמוד בית עם כרטיסי משחקים.
+- עמוד פרטי משחק.
+- הצגת סוגי מושבים ומספר מושבים זמינים.
+- יצירת הזמנה חדשה.
+- עמוד הצלחת הזמנה עם קוד הזמנה.
+- ניהול הזמנה לפי קוד הזמנה ואימייל.
+- ביטול הזמנה באמצעות soft delete על ידי `is_cancelled=True`.
+- התחברות מנהל בסיסית.
+- עמוד מנהל שמציג הזמנות וסטטיסטיקות משחקים.
+- עמוד הסבר `/about`.
+- נקודת בריאות `/health`.
 
-בהמשך הפרויקט מתוכנן גם שלב Deployment לשרת AWS EC2.
+## ארכיטקטורת הפרויקט
 
-## 3. ארכיטקטורה
-
-הארכיטקטורה של האפליקציה:
+זרימת האפליקציה:
 
 ```text
-User -> Flask -> SQLAlchemy -> MySQL
+Browser/User -> Flask -> SQLAlchemy -> MySQL
 ```
 
 הסבר פשוט:
 
-- המשתמש נכנס לאפליקציה בדפדפן.
-- Flask מקבל את הבקשה.
-- SQLAlchemy מדבר עם מסד הנתונים.
-- MySQL שומר את משימות ה-TODO.
+- המשתמש נכנס לאפליקציה דרך הדפדפן.
+- Flask מקבל את הבקשה ומחזיר עמוד HTML או תשובת JSON.
+- SQLAlchemy משמש כ-ORM ומאפשר לעבוד עם טבלאות בצורה של מחלקות Python.
+- MySQL שומר את הנתונים של האצטדיונים, המשחקים, סוגי המושבים וההזמנות.
 
-## 4. זרימת DevOps
-
-זרימת ה-DevOps בפרויקט:
+זרימת DevOps עתידית/נוכחית:
 
 ```text
-Developer -> GitHub -> GitHub Actions -> pytest -> Docker build -> Docker Hub
+Developer -> GitHub -> GitHub Actions -> Pytest -> Docker Build -> Docker Hub -> Deployment
 ```
 
-הסבר פשוט:
+## טכנולוגיות מרכזיות
 
-- המפתח עושה שינוי בקוד.
-- הקוד נשלח ל-GitHub.
-- GitHub Actions מתחיל לרוץ אוטומטית.
-- pytest מריץ בדיקות.
-- Docker בונה image לאפליקציה.
-- אם הכל מצליח, ה-image נשלח ל-Docker Hub.
+- `Python` - שפת התכנות של האפליקציה.
+- `Flask` - framework פשוט לבניית אפליקציות web.
+- `SQLAlchemy` - כלי ORM שמחבר בין קוד Python למסד הנתונים.
+- `MySQL` - מסד הנתונים של האפליקציה בזמן ריצה רגילה.
+- `HTML templates` - עמודי HTML שנמצאים בתיקיית `templates`.
+- `CSS static files` - עיצוב האפליקציה דרך קבצים בתיקיית `static`.
+- `Docker` - בניית image לאפליקציית Flask.
+- `Docker Compose` - הרצת Flask ו-MySQL ביחד בסביבה מקומית.
+- `GitHub Actions` - הרצת בדיקות, בניית Docker image ושליחה ל-Docker Hub.
+- `Pytest` - בדיקות אוטומטיות.
+- `Docker Hub` - אחסון ה-Docker image.
+- `Environment Variables` - הגדרות כמו סיסמאות ושמות משתמשים בלי להכניס סודות לקוד.
+- `SQLite in testing mode` - מסד נתונים זמני ומהיר לבדיקות בלבד.
 
-## 5. הסבר קבצים
+## מבנה תיקיות וקבצים
 
-### app.py
+### `app.py`
 
-הקובץ הראשי של אפליקציית Flask.
-בקובץ הזה נמצאים:
+הקובץ המרכזי של Flask. הוא כולל:
 
-- יצירת האפליקציה
-- הגדרת החיבור למסד הנתונים
-- מודל `Todo`
-- routes כמו `/`, `/add`, `/update`, `/delete`
-- route בריאות: `/health`
+- יצירת האפליקציה.
+- הגדרת חיבור למסד נתונים.
+- מודלים של SQLAlchemy.
+- routes של עמודים ציבוריים.
+- routes של הזמנות.
+- routes של מנהל.
+- יצירת נתוני דמו אם מסד הנתונים ריק.
 
-### requirements.txt
+### `requirements.txt`
 
-רשימת ספריות Python שהפרויקט צריך.
-GitHub Actions וגם Docker משתמשים בקובץ הזה כדי להתקין dependencies.
+רשימת ספריות Python שהפרויקט צריך, כמו Flask, SQLAlchemy, PyMySQL ו-pytest.
 
-### Dockerfile
+### `Dockerfile`
 
-קובץ שמגדיר איך לבנות Docker image לאפליקציית Flask.
-הוא מתקין את התלויות ומריץ את `app.py`.
+מגדיר איך לבנות Docker image לאפליקציית Flask.
 
-### docker-compose.yml
+### `docker-compose.yml`
 
-קובץ שמריץ כמה containers יחד:
+קובץ להרצה מקומית של האפליקציה יחד עם MySQL.
 
-- container של Flask
-- container של MySQL
-
-כך אפשר להריץ את כל המערכת מקומית בפקודה אחת.
-
-### .github/workflows/ci.yml
-
-קובץ GitHub Actions.
-הוא מגדיר את תהליך ה-CI:
-
-- checkout לקוד
-- התקנת Python
-- התקנת requirements
-- הרצת pytest
-- בניית Docker image
-- התחברות ל-Docker Hub עם GitHub Secrets
-- העלאת image ל-Docker Hub
-
-### tests/test_health.py
-
-בדיקה פשוטה עם pytest.
-הבדיקה בודקת שה-route `/health` מחזיר תשובה תקינה.
-
-### templates/
-
-תיקייה של קבצי HTML.
-Flask משתמש בקבצים האלה כדי להציג עמודים למשתמש.
-
-### static/
-
-תיקייה לקבצים סטטיים כמו CSS ותמונות.
-
-### db/
-
-תיקייה שקשורה להגדרות MySQL.
-
-## 6. איך להריץ מקומית עם Docker Compose
-
-מתוך תיקיית הפרויקט מריצים:
-
-```bash
-docker compose up --build
-```
-
-אם רוצים להריץ ברקע:
-
-```bash
-docker compose up --build -d
-```
-
-כדי לעצור את ה-containers:
-
-```bash
-docker compose down
-```
-
-האפליקציה אמורה לרוץ בכתובת:
+האפליקציה נפתחת על:
 
 ```text
 http://localhost:5001
 ```
 
-## 7. איך לבדוק את /health
+MySQL רץ בתוך ה-container על פורט `3306`, אבל במחשב המקומי הוא ממופה ל-`3307` כדי לא להתנגש עם MySQL מקומי של Windows.
 
-אפשר לבדוק שהאפליקציה רצה עם:
+### `docker-compose.prod.yml`
 
-```bash
-curl http://localhost:5001/health
-```
+קובץ בסגנון production שמריץ את ה-image שכבר נשלח ל-Docker Hub יחד עם MySQL.
 
-תשובה תקינה:
+### `.env.example`
 
-```json
-{
-  "status": "ok"
-}
-```
+קובץ דוגמה בטוח למשתני סביבה. הוא כן נשמר ב-Git כי אין בו סודות אמיתיים.
 
-## 8. איך לשלוח בקשות בסיסיות
+### `.gitignore`
 
-פתיחת האפליקציה בדפדפן:
+מונע העלאה של קבצים מקומיים או רגישים כמו `.env`, סביבות וירטואליות, קבצי cache וקבצי מערכת.
+
+### `.github/workflows/ci.yml`
+
+קובץ GitHub Actions שמריץ את תהליך ה-CI/CD.
+
+### `templates/`
+
+תיקיית עמודי HTML:
+
+- `base.html` - תבנית בסיסית וניווט.
+- `index.html` - עמוד הבית עם המשחקים.
+- `match_detail.html` - עמוד פרטי משחק וטופס הזמנה.
+- `booking_success.html` - עמוד פרטי הזמנה.
+- `manage_booking.html` - ניהול הזמנה לפי קוד ואימייל.
+- `admin_login.html` - התחברות מנהל.
+- `admin_bookings.html` - צפייה בהזמנות וסטטיסטיקות.
+- `about.html` - הסבר על הפרויקט.
+
+### `static/`
+
+קבצי עיצוב ותמונות:
+
+- `static/css/main.css`
+- `static/images/stadium-background.jpg`
+
+### `tests/`
+
+בדיקות pytest. כרגע יש בדיקות ל-health, עמוד הבית, עמוד משחק, ניהול הזמנה, ביטול הזמנה, עמוד about ועמוד מנהל.
+
+### `db/mysqld.cnf`
+
+קובץ הגדרות בסיסי ל-MySQL container.
+
+## מבנה מסד הנתונים
+
+הפרויקט משתמש בארבע טבלאות מרכזיות במקום טבלה אחת גדולה, כדי לשמור על סדר ולמנוע כפילויות.
+
+### `stadiums`
+
+שומרת מידע על אצטדיונים.
+
+עמודות חשובות:
+
+- `id`
+- `name`
+- `city`
+- `capacity`
+
+קשר:
+
+- אצטדיון אחד יכול להכיל הרבה משחקים.
+
+### `matches`
+
+שומרת מידע על משחקים.
+
+עמודות חשובות:
+
+- `id`
+- `home_team`
+- `away_team`
+- `match_date`
+- `stadium_id`
+
+קשר:
+
+- כל משחק שייך לאצטדיון אחד.
+- לכל משחק יכולים להיות כמה סוגי מושבים.
+- לכל משחק יכולות להיות הרבה הזמנות.
+
+### `seat_types`
+
+שומרת סוגי מושבים לכל משחק.
+
+עמודות חשובות:
+
+- `id`
+- `name`
+- `price`
+- `total_seats`
+- `match_id`
+
+קשר:
+
+- כל סוג מושב שייך למשחק אחד.
+- לדוגמה: Regular, Premium, VIP.
+
+### `bookings`
+
+שומרת הזמנות של משתמשים.
+
+עמודות חשובות:
+
+- `id`
+- `booking_code`
+- `customer_name`
+- `customer_email`
+- `seats_count`
+- `is_cancelled`
+- `created_at`
+- `match_id`
+- `seat_type_id`
+
+קשר:
+
+- כל הזמנה שייכת למשחק אחד.
+- כל הזמנה שייכת לסוג מושב אחד.
+
+## למה ארבע טבלאות ולא טבלה אחת?
+
+אם כל המידע היה בטבלה אחת, היו הרבה כפילויות: שם אצטדיון, שם משחק, מחיר מושב וכדומה.
+
+חלוקה לטבלאות מאפשרת:
+
+- קוד מסודר יותר.
+- קשרים ברורים בין נתונים.
+- פחות כפילויות.
+- הסבר טוב יותר בארכיטקטורה.
+- בסיס נכון יותר לאפליקציה אמיתית.
+
+## זרימת הזמנה
+
+1. המשתמש פותח את עמוד הבית.
+2. המשתמש בוחר משחק.
+3. המשתמש רואה את פרטי המשחק, האצטדיון וסוגי המושבים.
+4. המשתמש בוחר סוג מושב ומספר מושבים.
+5. האפליקציה בודקת שיש מספיק מושבים זמינים.
+6. אם הכל תקין, נוצרת שורת `Booking` במסד הנתונים.
+7. המשתמש מקבל `booking_code`.
+8. המשתמש יכול לנהל את ההזמנה בעזרת `booking_code` ו-`customer_email`.
+9. המשתמש יכול לבטל הזמנה.
+10. הזמנה מבוטלת לא נמחקת מהמסד, אלא מקבלת `is_cancelled=True`.
+
+## לוגיקת מושבים זמינים
+
+החישוב הוא:
 
 ```text
-http://localhost:5001
+available seats = total seats - active booked seats
 ```
 
-הוספת TODO דרך curl:
+כאשר:
 
-```bash
-curl -X POST -d "title=Learn DevOps" http://localhost:5001/add
+```text
+active booked seats = bookings where is_cancelled == False
 ```
 
-עדכון TODO לפי מזהה:
+הזמנות מבוטלות נשארות במסד הנתונים, אבל לא נחשבות כמושבים תפוסים.
 
-```bash
-curl http://localhost:5001/update/1
+## משתני סביבה
+
+הפרויקט משתמש במשתני סביבה כדי לא להכניס סודות לקוד.
+
+קובץ `.env.example` נשמר ב-Git כדוגמה בטוחה:
+
+```env
+ADMIN_PASSWORD=admin123
+SECRET_KEY=dev-secret-key
+DB_USER=flask
+DB_PASSWORD=change-me
+DB_NAME=flask
+MYSQL_ROOT_PASSWORD=change-root-password
 ```
 
-מחיקת TODO לפי מזהה:
+קובץ `.env` הוא קובץ מקומי בלבד והוא לא נשמר ב-Git.
 
-```bash
-curl http://localhost:5001/delete/1
+הסבר משתנים:
+
+- `ADMIN_PASSWORD` - סיסמת מנהל.
+- `SECRET_KEY` - מפתח session של Flask.
+- `DB_USER` - משתמש MySQL.
+- `DB_PASSWORD` - סיסמת MySQL.
+- `DB_NAME` - שם מסד הנתונים.
+- `MYSQL_ROOT_PASSWORD` - סיסמת root של MySQL.
+
+חשוב: סיסמאות אמיתיות לא שומרים ב-GitHub. בסביבה אמיתית משתמשים ב-`.env` מקומי או ב-GitHub Secrets.
+
+## בדיקות
+
+GitHub Actions מריץ `pytest` בכל push ל-`main`.
+
+במצב רגיל עם Docker, האפליקציה משתמשת ב-MySQL.
+
+במצב בדיקות:
+
+```text
+TESTING=true
 ```
 
-## 9. איך להתחבר למסד הנתונים MySQL בזמן שה-containers רצים
+האפליקציה משתמשת ב-SQLite בזיכרון:
 
-קודם מוודאים שה-containers רצים:
-
-```bash
-docker compose ps
+```text
+sqlite:///:memory:
 ```
 
-כניסה ל-MySQL container:
+SQLite משמש רק לבדיקות מהירות ומבודדות, כדי שלא יהיה צורך להריץ MySQL בתוך GitHub Actions בזמן pytest.
 
-```bash
-docker exec -it mysql mysql -u flask -p flask
-```
+נבדקים בין היתר:
 
-לאחר מכן מכניסים את הסיסמה שהוגדרה במשתנה הסביבה `DB_PASSWORD`.
+- `/health`
+- עמוד הבית.
+- עמוד פרטי משחק.
+- עמוד ניהול הזמנה.
+- עמוד פרטי הזמנה.
+- ביטול הזמנה.
+- עמוד about.
+- עמוד מנהל אחרי התחברות session בבדיקה.
 
-בתוך MySQL אפשר להריץ:
+## Docker ו-Docker Compose
 
-```sql
-SHOW TABLES;
-SELECT * FROM todo;
-```
+`Dockerfile` בונה image לאפליקציית Flask.
 
-## 10. Docker Hub image
+`docker-compose.yml` מריץ מקומית:
 
-שם ה-image ב-Docker Hub:
+- Flask app
+- MySQL
+
+`docker-compose.prod.yml` מריץ את ה-image שכבר פורסם ל-Docker Hub:
 
 ```text
 shlomodevops/devops-final-projectshlomo
 ```
 
-פקודת pull:
+MySQL בתוך ה-container משתמש בפורט `3306`.
 
-```bash
-docker pull shlomodevops/devops-final-projectshlomo:latest
+במחשב המקומי הפורט ממופה ל-`3307`, כדי למנוע התנגשות עם MySQL מקומי שכבר משתמש ב-`3306`.
+
+## CI/CD Pipeline
+
+הזרימה הנוכחית ב-GitHub Actions:
+
+```text
+Push to main
+-> checkout code
+-> setup Python
+-> install dependencies
+-> run pytest
+-> build Docker image
+-> login to Docker Hub using GitHub Secrets
+-> push Docker image
 ```
 
-אפשר גם למשוך image לפי commit SHA אם התג קיים ב-Docker Hub.
+התחברות ל-Docker Hub נעשית עם GitHub Secrets:
 
-## 11. מה עדיין מתוכנן
+- `DOCKERHUB_USERNAME`
+- `DOCKERHUB_TOKEN`
 
-בהמשך הפרויקט מתוכננים השלבים הבאים:
+## איך להריץ מקומית
 
-- Deployment ל-AWS EC2
-- שימוש ב-Nginx לפני Flask
-- Terraform בסוף, כדי ליצור תשתית בצורה אוטומטית
+קודם יוצרים קובץ `.env` מתוך הדוגמה:
 
-בשלב הנוכחי אין עדיין AWS, אין Terraform, ואין deployment.
+```powershell
+Copy-Item .env.example .env
+```
+
+אחר כך מריצים:
+
+```powershell
+docker compose up --build
+```
+
+פותחים בדפדפן:
+
+```text
+http://localhost:5001
+```
+
+בדיקת health:
+
+```powershell
+curl http://localhost:5001/health
+```
+
+עמוד התחברות מנהל:
+
+```text
+http://localhost:5001/admin/login
+```
+
+## גישת מנהל
+
+סיסמת המנהל מגיעה ממשתנה הסביבה:
+
+```text
+ADMIN_PASSWORD
+```
+
+יש ערך דמו מקומי:
+
+```text
+admin123
+```
+
+הערך הזה מתאים לפיתוח והדגמה בלבד. בפרויקט אמיתי סיסמה אמיתית צריכה להיות בקובץ `.env` מקומי או ב-GitHub Secrets, ולא בתוך הקוד.
+
+## מצב הפרויקט הנוכחי
+
+מה שכבר הושלם:
+
+- אפליקציית Flask.
+- מודלים של MySQL עם SQLAlchemy.
+- עמוד בית עם משחקים.
+- עמוד פרטי משחק.
+- יצירת הזמנה.
+- ניהול וביטול הזמנה.
+- התחברות מנהל.
+- עמוד מנהל עם הזמנות וסטטיסטיקות.
+- עמוד about.
+- `/health`.
+- Dockerfile.
+- Docker Compose מקומי.
+- Docker Compose בסגנון production.
+- GitHub Actions.
+- Pytest.
+- Docker image build.
+- Push ל-Docker Hub.
+- שימוש במשתני סביבה.
+- `.env.example`.
+
+## Planned / Next Steps
+
+שלבים מתוכננים להמשך:
+
+- הוספת Nginx כ-reverse proxy לפני Flask.
+- פריסה ל-AWS EC2.
+- הגדרת Security Groups ב-AWS.
+- הוספת health checks בסביבת deployment.
+- הוספת monitoring בסיסי.
+- אופציונלי: Prometheus ו-Grafana.
+- אופציונלי: כלי DevSecOps כמו Gitleaks, Bandit, pip-audit, Trivy ו-Hadolint.
+- Terraform רק בהמשך, אחרי שהפריסה ל-AWS תהיה מובנת וברורה.
+
+## הערות להגנה על הפרויקט
+
+### למה Flask?
+
+Flask פשוט, קל להבנה ומתאים לאפליקציית דמו קטנה. המטרה כאן היא DevOps, לא framework מורכב.
+
+### למה MySQL?
+
+MySQL הוא מסד נתונים נפוץ בעולם האמיתי, והוא מתאים להדגמת עבודה עם container נפרד למסד נתונים.
+
+### למה SQLAlchemy?
+
+SQLAlchemy מאפשר לעבוד עם טבלאות דרך מחלקות Python, במקום לכתוב SQL ידני בכל פעולה.
+
+### למה ארבע טבלאות?
+
+כי יש ישויות שונות: אצטדיונים, משחקים, סוגי מושבים והזמנות. ההפרדה יוצרת מבנה מסודר עם קשרים ברורים.
+
+### למה Docker?
+
+Docker מאפשר להריץ את האפליקציה בצורה אחידה בכל מחשב או שרת, עם אותן תלויות.
+
+### למה Docker Compose?
+
+כי יש יותר משירות אחד: Flask ו-MySQL. Docker Compose מריץ אותם יחד בפקודה אחת.
+
+### למה GitHub Actions?
+
+כדי להריץ בדיקות ובניית image אוטומטית בכל push, כחלק מתהליך CI/CD.
+
+### למה SQLite בבדיקות?
+
+SQLite בזיכרון מהיר ופשוט. הוא מאפשר להריץ pytest בלי להפעיל MySQL ב-GitHub Actions.
+
+### למה להשתמש ב-`.env` ו-GitHub Secrets?
+
+כדי לא לשמור סיסמאות, tokens או מפתחות בתוך הקוד. זה עיקרון בסיסי באבטחת DevOps.
+
+</div>
