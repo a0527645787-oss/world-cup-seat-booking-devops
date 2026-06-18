@@ -386,6 +386,29 @@ curl http://localhost:5001/health
 http://localhost:5001/admin/login
 ```
 
+## Nginx reverse proxy
+
+The Docker Compose setup now includes Nginx in front of the Flask app.
+
+Request flow:
+
+```text
+User -> Nginx -> Flask -> MySQL
+```
+
+Nginx listens on port 80 and forwards requests to the Flask service at `app:5000`.
+The Flask app is still available on `http://localhost:5001` for local debugging.
+
+Local Nginx test URLs:
+
+```text
+http://localhost
+http://localhost/health
+http://localhost/admin/login
+```
+
+HTTPS is not configured yet. This is local HTTP reverse proxy support only.
+
 ## גישת מנהל
 
 סיסמת המנהל מגיעה ממשתנה הסביבה:

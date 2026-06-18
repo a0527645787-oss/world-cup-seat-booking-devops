@@ -2,6 +2,18 @@
 # This file runs the already published Flask image from Docker Hub.
 
 services:
+  nginx:
+    # Expose Nginx as the public HTTP entrypoint.
+    image: nginx:alpine
+    container_name: nginx_proxy_prod
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+
   app:
     # Use the image that GitHub Actions pushed to Docker Hub.
     image: shlomodevops/devops-final-projectshlomo:latest
