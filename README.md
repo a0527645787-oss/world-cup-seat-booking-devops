@@ -390,13 +390,16 @@ http://localhost:5001/admin/login
 
 The Docker Compose setup now includes Nginx in front of the Flask app.
 
+Nginx is the external reverse proxy. Gunicorn is the WSGI server that runs the Flask app inside the application container. Flask contains the application routes and business logic.
+
 Request flow:
 
 ```text
-User -> Nginx -> Flask -> MySQL
+User -> Nginx -> Gunicorn -> Flask -> SQLAlchemy -> MySQL
 ```
 
 Nginx listens on port 80 and forwards requests to the Flask service at `app:5000`.
+The Flask container listens internally on port `5000` through Gunicorn, so production containers do not use Flask's development server and the `This is a development server` warning is removed from the production runtime.
 The Flask app is still available on `http://localhost:5001` for local debugging.
 
 Local Nginx test URLs:
