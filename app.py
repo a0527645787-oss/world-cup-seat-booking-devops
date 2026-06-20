@@ -8,12 +8,21 @@ import os
 app = Flask(__name__)
 APP_ENV = os.getenv("APP_ENV", "development").lower()
 IS_PRODUCTION = APP_ENV == "production"
+
+
+def get_bool_env(name, default):
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in ("1", "true", "yes", "on")
+
+
 app.config["TESTING"] = os.getenv("TESTING", "").lower() == "true"
 app.config.update(
     PERMANENT_SESSION_LIFETIME=timedelta(minutes=30),
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE="Lax",
-    SESSION_COOKIE_SECURE=IS_PRODUCTION,
+    SESSION_COOKIE_SECURE=get_bool_env("SESSION_COOKIE_SECURE", IS_PRODUCTION),
 )
 
 

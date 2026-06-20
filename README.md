@@ -263,6 +263,7 @@ active booked seats = bookings where is_cancelled == False
 
 ```env
 APP_ENV=development
+SESSION_COOKIE_SECURE=false
 ADMIN_PASSWORD=replace-with-a-strong-admin-password
 SECRET_KEY=replace-with-a-long-random-secret-key
 DB_USER=flask
@@ -271,12 +272,25 @@ DB_NAME=flask
 MYSQL_ROOT_PASSWORD=change-root-password
 ```
 
+For an HTTP demo server, use:
+
+```env
+SESSION_COOKIE_SECURE=false
+```
+
+For real HTTPS production, use:
+
+```env
+SESSION_COOKIE_SECURE=true
+```
+
 קובץ `.env` הוא קובץ מקומי בלבד והוא לא נשמר ב-Git.
 
 הסבר משתנים:
 
 - `ADMIN_PASSWORD` - סיסמת מנהל.
 - `SECRET_KEY` - מפתח session של Flask.
+- `SESSION_COOKIE_SECURE` - set to `false` for plain HTTP demo servers and `true` for real HTTPS production.
 - `DB_USER` - משתמש MySQL.
 - `DB_PASSWORD` - סיסמת MySQL.
 - `DB_NAME` - שם מסד הנתונים.
