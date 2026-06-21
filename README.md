@@ -361,12 +361,29 @@ Push to main
 -> build Docker image
 -> login to Docker Hub using GitHub Secrets
 -> push Docker image
+-> connect to EC2 with SSH using GitHub Secrets
+-> pull the latest image and restart Docker Compose
+-> verify /health through Nginx
 ```
 
 התחברות ל-Docker Hub נעשית עם GitHub Secrets:
 
 - `DOCKERHUB_USERNAME`
 - `DOCKERHUB_TOKEN`
+
+### Automated EC2 deployment
+
+GitHub Actions builds the Flask Docker image and pushes it to Docker Hub after the tests pass.
+After the Docker image is pushed successfully, the deploy job connects to the EC2 server over SSH using these GitHub repository secrets:
+
+- `EC2_HOST`
+- `EC2_USER`
+- `EC2_SSH_KEY`
+
+On EC2, the deployment runs from `~/seat-booking-devops`, pulls the latest `main` branch, pulls the latest Docker image from Docker Hub, and restarts the production Docker Compose stack.
+Docker Compose restarts Nginx, Gunicorn/Flask, and MySQL, then the workflow checks `http://localhost/health`.
+
+The server `.env` file stays only on EC2. It is not committed to Git and should not be copied into GitHub Actions.
 
 ## איך להריץ מקומית
 

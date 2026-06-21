@@ -55,3 +55,26 @@ jobs:
         run: |
           docker push shlomodevops/devops-final-projectshlomo:latest
           docker push shlomodevops/devops-final-projectshlomo:${{ github.sha }}
+
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      # Connect to the EC2 server and restart the production Docker Compose stack.
+      - name: Deploy production stack over SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script_stop: true
+          script: |
+            cd ~/seat-booking-devops
+            git pull origin main
+            docker compose -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml up -d
+            docker image prune -f
+            curl -f http://localhost/health
