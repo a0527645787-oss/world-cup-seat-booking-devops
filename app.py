@@ -4,10 +4,16 @@ from hmac import compare_digest
 from uuid import uuid4
 from flask import Flask, abort, redirect, render_template, request, session, url_for
 from flask_sqlalchemy import SQLAlchemy
+from prometheus_client import CONTENT_TYPE_LATEST, Counter, generate_latest
 import os
 app = Flask(__name__)
 APP_ENV = os.getenv("APP_ENV", "development").lower()
 IS_PRODUCTION = APP_ENV == "production"
+HTTP_REQUESTS_TOTAL = Counter(
+    "flask_http_requests_total",
+    "Total HTTP requests handled by the Flask app",
+    ["method", "endpoint", "status"],
+)
 
 
 def get_bool_env(name, default):
@@ -235,6 +241,19 @@ def create_tables():
     db.create_all()
     seed_sample_data()
 
+
+@app.after_request
+def record_request_metrics(response):
+    if request.path != "/metrics":
+        endpoint = request.endpoint or "unknown"
+        HTTP_REQUESTS_TOTAL.labels(
+            method=request.method,
+            endpoint=endpoint,
+            status=str(response.status_code),
+        ).inc()
+    return response
+
+
 @app.route('/', methods=["GET"])
 def index():
     matches = Match.query.order_by(Match.match_date).all()
@@ -243,6 +262,11 @@ def index():
 @app.route('/health', methods=["GET"])
 def health():
     return {"status": "ok"}, 200
+
+
+@app.route('/metrics', methods=["GET"])
+def metrics():
+    return generate_latest(), 200, {"Content-Type": CONTENT_TYPE_LATEST}
 
 
 @app.route('/about', methods=["GET"])
