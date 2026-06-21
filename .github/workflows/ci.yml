@@ -77,4 +77,14 @@ jobs:
             docker compose -f docker-compose.prod.yml pull
             docker compose -f docker-compose.prod.yml up -d
             docker image prune -f
-            curl -f http://localhost/health
+            for i in {1..12}; do
+              curl -fsS http://localhost/health && exit 0
+              echo "Health check failed, retrying..."
+              sleep 5
+            done
+
+            echo "Health check failed after retries"
+            docker ps
+            docker logs --tail=80 flask_app_prod
+            docker logs --tail=80 nginx_proxy_prod
+            exit 1
