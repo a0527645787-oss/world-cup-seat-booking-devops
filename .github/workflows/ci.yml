@@ -77,9 +77,14 @@ jobs:
             docker compose -f docker-compose.prod.yml pull
             docker compose -f docker-compose.prod.yml up -d
             docker image prune -f
-            for i in {1..12}; do
-              curl -fsS http://localhost/health && exit 0
-              echo "Health check failed, retrying..."
+            set +e
+
+            for i in $(seq 1 12); do
+              if curl -fsS http://localhost/health; then
+                echo "Health check passed"
+                exit 0
+              fi
+              echo "Health check failed, retrying attempt $i..."
               sleep 5
             done
 
