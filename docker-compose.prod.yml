@@ -28,6 +28,7 @@ services:
       DB_PASSWORD: ${DB_PASSWORD:-change-me}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Set ADMIN_PASSWORD in your environment or .env file}
       SECRET_KEY: ${SECRET_KEY:?Set SECRET_KEY in your environment or .env file}
+      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-true}
     depends_on:
       # Start MySQL before starting the Flask container.
       - mysql
