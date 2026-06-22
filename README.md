@@ -263,6 +263,7 @@ active booked seats = bookings where is_cancelled == False
 
 ```env
 APP_ENV=development
+IMAGE_TAG=latest
 SESSION_COOKIE_SECURE=false
 ADMIN_PASSWORD=replace-with-a-strong-admin-password
 SECRET_KEY=replace-with-a-long-random-secret-key
@@ -290,6 +291,7 @@ SESSION_COOKIE_SECURE=true
 
 - `ADMIN_PASSWORD` - סיסמת מנהל.
 - `SECRET_KEY` - מפתח session של Flask.
+- `IMAGE_TAG` - Docker image tag used by `docker-compose.prod.yml`; default is `latest`.
 - `SESSION_COOKIE_SECURE` - set to `false` for plain HTTP demo servers and `true` for real HTTPS production.
 - `DB_USER` - משתמש MySQL.
 - `DB_PASSWORD` - סיסמת MySQL.
@@ -343,6 +345,36 @@ SQLite משמש רק לבדיקות מהירות ומבודדות, כדי שלא
 ```text
 shlomodevops/devops-final-projectshlomo
 ```
+
+### Docker image tags and rollback
+
+Docker image tags are labels that point to a specific built image in Docker Hub.
+This project publishes two tags for each successful build:
+
+- `latest` - points to the newest image built from `main`.
+- short commit SHA, for example `abc1234` - points to the image built from that exact commit.
+
+By default, production uses:
+
+```env
+IMAGE_TAG=latest
+```
+
+That means `docker-compose.prod.yml` runs:
+
+```text
+shlomodevops/devops-final-projectshlomo:latest
+```
+
+To roll back, set `IMAGE_TAG` on the EC2 server to a previous short SHA tag in the server `.env` file, then recreate the app container:
+
+```bash
+IMAGE_TAG=abc1234
+docker compose -f docker-compose.prod.yml pull app
+docker compose -f docker-compose.prod.yml up -d --force-recreate app
+```
+
+Use the real previous tag from Docker Hub or from the GitHub Actions build output.
 
 MySQL בתוך ה-container משתמש בפורט `3306`.
 

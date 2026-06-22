@@ -16,7 +16,7 @@ services:
 
   app:
     # Use the image that GitHub Actions pushed to Docker Hub.
-    image: shlomodevops/devops-final-projectshlomo:latest
+    image: shlomodevops/devops-final-projectshlomo:${IMAGE_TAG:-latest}
     container_name: flask_app_prod
     restart: unless-stopped
     environment:
