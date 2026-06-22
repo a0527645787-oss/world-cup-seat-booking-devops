@@ -80,8 +80,10 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          script_stop: true
+          script_stop: false
           script: |
+            set -Eeuo pipefail
+
             cd ~/seat-booking-devops
 
             echo "Current server commit before pull:"
@@ -126,8 +128,6 @@ jobs:
 
             RUNNING_IMAGE="$(docker inspect flask_app_prod --format='{{.Config.Image}}')"
             echo "Running Docker image after deploy: ${RUNNING_IMAGE}"
-
-            set +e
 
             for i in $(seq 1 12); do
               if curl -fsS http://localhost/health; then
