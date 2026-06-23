@@ -25,3 +25,21 @@ mysql-data/
 *.sqlite3
 *.sql
 *.log
+
+# Terraform generated files
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# SSH/private key files
+*.pem
+*.key
+id_rsa
+id_ed25519
