@@ -1,0 +1,62 @@
+name: Security Checks
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "README.md"
+      - "docs/**"
+      - "terraform/**"
+      - "terraform/README.md"
+      - "*.md"
+  workflow_dispatch:
+
+jobs:
+  security:
+    name: DevSecOps checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Gitleaks scans the repository for accidentally committed secrets.
+      - name: Run Gitleaks secret scan
+        uses: gitleaks/gitleaks-action@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # Bandit checks Python code for common security issues.
+      - name: Run Bandit Python SAST scan
+        run: |
+          python -m pip install --upgrade pip
+          pip install bandit
+          bandit -r . -x ./.venv,./venv,./env,./terraform
+
+      # pip-audit checks Python dependencies for known vulnerabilities.
+      - name: Run pip-audit dependency scan
+        run: |
+          pip install pip-audit
+          pip-audit -r requirements.txt
+
+      # Hadolint checks the Dockerfile for Docker best-practice and security issues.
+      - name: Run Hadolint Dockerfile scan
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: Dockerfile
+
+      - name: Build Docker image for Trivy scan
+        run: docker build -t seat-booking-app:security .
+
+      # Trivy scans the built Docker image for HIGH and CRITICAL vulnerabilities.
+      - name: Run Trivy Docker image scan
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          image-ref: seat-booking-app:security
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+          ignore-unfixed: true

@@ -27,6 +27,7 @@ mysql-data/
 *.log
 
 # Terraform generated files
+.terraform/
 **/.terraform/
 *.tfstate
 *.tfstate.*

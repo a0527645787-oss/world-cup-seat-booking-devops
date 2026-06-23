@@ -209,6 +209,14 @@ GitHub Secrets used by the workflow:
 - `EC2_USER`
 - `EC2_SSH_KEY`
 
+## Workflow Responsibilities
+
+The GitHub Actions workflows are split by responsibility:
+
+- App CI/CD deploys the Flask application to EC2 with Docker, Docker Hub, Docker Compose, health checks, and rollback.
+- Terraform validates infrastructure code safely with `fmt`, `init`, `validate`, and `plan`; it does not run `apply` automatically.
+- Security Checks runs beginner-friendly DevSecOps scans for secrets, Python code, Python dependencies, Dockerfile quality, and Docker image vulnerabilities.
+
 ## Docker Image Tagging
 
 Docker images are pushed to Docker Hub under:
