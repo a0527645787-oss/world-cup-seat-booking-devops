@@ -6,6 +6,7 @@ import pytest
 os.environ["TESTING"] = "true"
 
 from app import ADMIN_PASSWORD, Booking, Match, SeatType, Stadium, app, db
+from seed_world_cup_2026 import STAGE_PRICES, seed_world_cup_2026_data
 
 
 @pytest.fixture()
@@ -21,9 +22,16 @@ def client():
             capacity=50000,
         )
         match = Match(
+            match_number=999,
+            stage="Group Stage",
+            stage_order=1,
+            group_name="Group Test",
             home_team="Team A",
             away_team="Team B",
+            home_placeholder=False,
+            away_placeholder=False,
             match_date=datetime(2026, 6, 11, 20, 0),
+            kickoff_time="20:00",
             stadium=stadium,
         )
         match.seat_types = [
@@ -71,6 +79,7 @@ def test_home_page_returns_200(client):
 
     assert response.status_code == 200
     assert b"Team A vs Team B" in response.data
+    assert b"Group Stage" in response.data
 
 
 def test_match_detail_page_returns_200(client):
@@ -178,3 +187,63 @@ def test_admin_logout_clears_session(client):
     with client.session_transaction() as sess:
         assert "admin_logged_in" not in sess
         assert "other_value" not in sess
+
+
+def test_match_model_supports_world_cup_schedule_fields(client):
+    with app.app_context():
+        match = Match.query.first()
+
+        assert match.match_number == 999
+        assert match.stage == "Group Stage"
+        assert match.stage_order == 1
+        assert match.group_name == "Group Test"
+        assert match.kickoff_time == "20:00"
+        assert match.home_placeholder is False
+        assert match.away_placeholder is False
+
+
+def test_world_cup_seed_creates_matches_without_duplicates(client):
+    with app.app_context():
+        db.drop_all()
+        db.create_all()
+
+        seed_world_cup_2026_data(db, Stadium, Match, SeatType)
+        first_count = Match.query.filter(Match.match_number.isnot(None)).count()
+
+        seed_world_cup_2026_data(db, Stadium, Match, SeatType)
+        second_count = Match.query.filter(Match.match_number.isnot(None)).count()
+
+        assert first_count == 104
+        assert second_count == 104
+
+
+def test_stage_based_pricing_is_seeded(client):
+    with app.app_context():
+        db.drop_all()
+        db.create_all()
+        seed_world_cup_2026_data(db, Stadium, Match, SeatType)
+
+        group_match = Match.query.filter_by(stage="Group Stage").first()
+        final_match = Match.query.filter_by(stage="Final").first()
+
+        group_prices = {seat.name: seat.price for seat in group_match.seat_types}
+        final_prices = {seat.name: seat.price for seat in final_match.seat_types}
+
+        assert group_prices["Regular"] == STAGE_PRICES["Group Stage"]["Regular"]
+        assert final_prices["VIP"] == STAGE_PRICES["Final"]["VIP"]
+
+
+def test_seed_has_group_stage_and_knockout_placeholder(client):
+    with app.app_context():
+        db.drop_all()
+        db.create_all()
+        seed_world_cup_2026_data(db, Stadium, Match, SeatType)
+
+        group_match = Match.query.filter_by(stage="Group Stage", group_name="Group A").first()
+        knockout_match = Match.query.filter_by(stage="Round of 32").first()
+
+        assert group_match is not None
+        assert group_match.home_placeholder is False
+        assert knockout_match is not None
+        assert "Group" in knockout_match.home_team
+        assert knockout_match.home_placeholder is True

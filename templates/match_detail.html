@@ -15,10 +15,20 @@
     <div class="detail-grid">
         <div>
             <h2>Match</h2>
+            <p><strong>Stage:</strong> {{ match.stage or "Match" }}</p>
+            {% if match.group_name %}
+                <p><strong>Group:</strong> {{ match.group_name }}</p>
+            {% endif %}
+            {% if match.match_number %}
+                <p><strong>Match number:</strong> {{ match.match_number }}</p>
+            {% endif %}
             <p><strong>Date:</strong> {{ match.match_date.strftime("%d %b %Y, %H:%M") }}</p>
             <p><strong>Stadium:</strong> {{ match.stadium.name }}</p>
             <p><strong>City:</strong> {{ match.stadium.city }}</p>
             <p><strong>Capacity:</strong> {{ "{:,}".format(match.stadium.capacity) }}</p>
+            {% if match.source_url %}
+                <p><strong>Schedule source:</strong> <a href="{{ match.source_url }}">{{ match.source_note }}</a></p>
+            {% endif %}
 
             <div class="seat-list detail-seat-list">
                 {% for seat_type in match.seat_types %}

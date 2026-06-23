@@ -108,6 +108,16 @@ p {
     gap: 18px;
 }
 
+.stage-section {
+    margin-bottom: 34px;
+}
+
+.stage-title {
+    margin: 0 0 16px;
+    color: #fff;
+    font-size: 1.85rem;
+}
+
 .match-card,
 .panel {
     border: 1px solid rgba(255, 255, 255, 0.34);
@@ -138,10 +148,27 @@ p {
     font-weight: 700;
 }
 
-.match-card h2 {
+.match-card h2,
+.match-card h3 {
     margin: 28px 0 8px;
     font-size: 1.65rem;
     line-height: 1.12;
+}
+
+.match-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 18px;
+}
+
+.match-meta span {
+    padding: 6px 9px;
+    border-radius: 999px;
+    background: rgba(22, 163, 74, 0.13);
+    color: var(--accent-dark);
+    font-size: 0.78rem;
+    font-weight: 800;
 }
 
 .stadium-name {

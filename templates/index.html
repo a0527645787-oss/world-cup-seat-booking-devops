@@ -1,41 +1,55 @@
 {% extends "base.html" %}
 
-{% block title %}World Cup Seat Booking{% endblock %}
+{% block title %}World Cup 2026 Seat Booking{% endblock %}
 
 {% block content %}
-<section class="hero">
-    <p class="eyebrow">World Cup 2026 inspired</p>
-    <h1>Choose your match seats</h1>
+<section class="hero tournament-hero">
+    <p class="eyebrow">World Cup 2026 Seat Booking</p>
+    <h1>Book seats by stage</h1>
     <p class="hero-text">
-        Browse upcoming matches, compare seat types, and get ready for the next booking step.
+        Browse sourced World Cup 2026 fixtures, from the group stage through the final.
+        Knockout matches use official-style placeholders until teams are known.
     </p>
 </section>
 
-<section class="match-grid" aria-label="Available matches">
-    {% for match in matches %}
-        <article class="match-card">
-            <div class="match-card-header">
-                <span class="match-date">{{ match.match_date.strftime("%d %b %Y, %H:%M") }}</span>
-                <span class="stadium-city">{{ match.stadium.city }}</span>
-            </div>
+{% for stage_group in stage_groups %}
+    <section class="stage-section" aria-labelledby="stage-{{ loop.index }}">
+        <h2 id="stage-{{ loop.index }}" class="stage-title">{{ stage_group.stage }}</h2>
 
-            <h2>{{ match.home_team }} vs {{ match.away_team }}</h2>
-            <p class="stadium-name">{{ match.stadium.name }}</p>
-
-            <div class="seat-list">
-                {% for seat_type in match.seat_types %}
-                    <div class="seat-row">
-                        <div>
-                            <strong>{{ seat_type.name }}</strong>
-                            <span>{{ seat_type.available_seats }} seats available</span>
-                        </div>
-                        <span class="seat-price">${{ "%.0f"|format(seat_type.price) }}</span>
+        <div class="match-grid" aria-label="{{ stage_group.stage }} matches">
+            {% for match in stage_group.matches %}
+                <article class="match-card">
+                    <div class="match-card-header">
+                        <span class="match-date">{{ match.match_date.strftime("%d %b %Y, %H:%M") }}</span>
+                        <span class="stadium-city">{{ match.stadium.city }}</span>
                     </div>
-                {% endfor %}
-            </div>
 
-            <a class="button" href="{{ url_for('match_detail', match_id=match.id) }}">Choose seats</a>
-        </article>
-    {% endfor %}
-</section>
+                    <div class="match-meta">
+                        <span>Match {{ match.match_number or "TBD" }}</span>
+                        {% if match.group_name %}
+                            <span>{{ match.group_name }}</span>
+                        {% endif %}
+                    </div>
+
+                    <h3>{{ match.home_team }} vs {{ match.away_team }}</h3>
+                    <p class="stadium-name">{{ match.stadium.name }}</p>
+
+                    <div class="seat-list">
+                        {% for seat_type in match.seat_types %}
+                            <div class="seat-row">
+                                <div>
+                                    <strong>{{ seat_type.name }}</strong>
+                                    <span>{{ seat_type.available_seats }} seats available</span>
+                                </div>
+                                <span class="seat-price">${{ "%.0f"|format(seat_type.price) }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <a class="button" href="{{ url_for('match_detail', match_id=match.id) }}">Choose seats</a>
+                </article>
+            {% endfor %}
+        </div>
+    </section>
+{% endfor %}
 {% endblock %}

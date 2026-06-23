@@ -4,6 +4,7 @@ from hmac import compare_digest
 from uuid import uuid4
 from flask import Flask, abort, redirect, render_template, request, session, url_for
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import inspect, text
 from prometheus_client import CONTENT_TYPE_LATEST, Counter, generate_latest
 import os
 app = Flask(__name__)
@@ -84,9 +85,18 @@ class Match(db.Model):
     __tablename__ = "matches"
 
     id = db.Column(db.Integer, primary_key=True)
+    match_number = db.Column(db.Integer, unique=True, nullable=True)
+    stage = db.Column(db.String(50), nullable=True)
+    stage_order = db.Column(db.Integer, nullable=True)
+    group_name = db.Column(db.String(20), nullable=True)
     home_team = db.Column(db.String(100), nullable=False)
     away_team = db.Column(db.String(100), nullable=False)
+    home_placeholder = db.Column(db.Boolean, nullable=False, default=False)
+    away_placeholder = db.Column(db.Boolean, nullable=False, default=False)
     match_date = db.Column(db.DateTime, nullable=False)
+    kickoff_time = db.Column(db.String(20), nullable=True)
+    source_note = db.Column(db.String(255), nullable=True)
+    source_url = db.Column(db.String(255), nullable=True)
     stadium_id = db.Column(db.Integer, db.ForeignKey("stadiums.id"), nullable=False)
 
     stadium = db.relationship("Stadium", back_populates="matches")
@@ -133,68 +143,34 @@ class Booking(db.Model):
     seat_type = db.relationship("SeatType", back_populates="bookings")
 
 
-def seed_sample_data():
-    if Stadium.query.first():
+def ensure_match_schedule_schema():
+    if app.config.get("TESTING"):
         return
 
-    stadiums = [
-        Stadium(name="Estadio Azteca / Mexico City Stadium", city="Mexico City", capacity=87523),
-        Stadium(name="BMO Field / Toronto Stadium", city="Toronto", capacity=45000),
-        Stadium(name="SoFi Stadium / Los Angeles Stadium", city="Inglewood", capacity=70240),
-        Stadium(name="MetLife Stadium / New York New Jersey Stadium", city="East Rutherford", capacity=82500),
-        Stadium(name="AT&T Stadium / Dallas Stadium", city="Arlington", capacity=80000),
-        Stadium(name="Mercedes-Benz Stadium / Atlanta Stadium", city="Atlanta", capacity=71000),
-        Stadium(name="Estadio Akron / Guadalajara Stadium", city="Zapopan", capacity=48071),
-        Stadium(name="Estadio BBVA / Monterrey Stadium", city="Guadalupe", capacity=53500),
-        Stadium(name="Gillette Stadium / Boston Stadium", city="Foxborough", capacity=65878),
-        Stadium(name="Lincoln Financial Field / Philadelphia Stadium", city="Philadelphia", capacity=67594),
-        Stadium(name="Hard Rock Stadium / Miami Stadium", city="Miami Gardens", capacity=65326),
-    ]
+    existing_columns = {column["name"] for column in inspect(db.engine).get_columns("matches")}
+    column_definitions = {
+        "match_number": "INTEGER UNIQUE",
+        "stage": "VARCHAR(50)",
+        "stage_order": "INTEGER",
+        "group_name": "VARCHAR(20)",
+        "home_placeholder": "BOOLEAN NOT NULL DEFAULT FALSE",
+        "away_placeholder": "BOOLEAN NOT NULL DEFAULT FALSE",
+        "kickoff_time": "VARCHAR(20)",
+        "source_note": "VARCHAR(255)",
+        "source_url": "VARCHAR(255)",
+    }
 
-    # Sample matches based on current public World Cup 2026 schedule information.
-    # This is demo seed data, not the complete official schedule.
-    matches_data = [
-        ("Mexico", "South Africa", datetime(2026, 6, 11, 21, 0), stadiums[0]),
-        ("Korea Republic", "Czechia", datetime(2026, 6, 11, 18, 0), stadiums[7]),
-        ("Canada", "Bosnia and Herzegovina", datetime(2026, 6, 12, 20, 0), stadiums[1]),
-        ("USA", "Paraguay", datetime(2026, 6, 12, 18, 0), stadiums[2]),
-        ("Czechia", "Mexico", datetime(2026, 6, 18, 21, 0), stadiums[6]),
-        ("South Africa", "Korea Republic", datetime(2026, 6, 19, 19, 0), stadiums[5]),
-        ("France", "Norway", datetime(2026, 6, 20, 20, 0), stadiums[3]),
-        ("England", "Panama", datetime(2026, 6, 21, 18, 0), stadiums[4]),
-        ("Argentina", "Jordan", datetime(2026, 6, 22, 20, 30), stadiums[10]),
-        ("Colombia", "Portugal", datetime(2026, 6, 23, 19, 30), stadiums[9]),
-    ]
+    for column_name, definition in column_definitions.items():
+        if column_name not in existing_columns:
+            db.session.execute(text(f"ALTER TABLE matches ADD COLUMN {column_name} {definition}"))
 
-    matches = []
-    for home_team, away_team, match_date, stadium in matches_data:
-        match = Match(
-            home_team=home_team,
-            away_team=away_team,
-            match_date=match_date,
-            stadium=stadium,
-        )
-        regular_capacity = int(stadium.capacity * 0.55)
-        premium_capacity = int(stadium.capacity * 0.18)
-        vip_capacity = int(stadium.capacity * 0.03)
-        match.seat_types = [
-            SeatType(name="Regular", price=120.0, total_seats=regular_capacity),
-            SeatType(name="Premium", price=280.0, total_seats=premium_capacity),
-            SeatType(name="VIP", price=650.0, total_seats=vip_capacity),
-        ]
-        matches.append(match)
-
-    sample_booking = Booking(
-        booking_code=str(uuid4()),
-        customer_name="Demo Fan",
-        customer_email="demo@example.com",
-        seats_count=2,
-        match=matches[0],
-        seat_type=matches[0].seat_types[0],
-    )
-
-    db.session.add_all(stadiums + matches + [sample_booking])
     db.session.commit()
+
+
+def seed_sample_data():
+    from seed_world_cup_2026 import seed_world_cup_2026_data
+
+    seed_world_cup_2026_data(db, Stadium, Match, SeatType)
 
 
 def admin_required(view_function):
@@ -239,6 +215,7 @@ def create_tables():
     if app.config.get("TESTING"):
         return
     db.create_all()
+    ensure_match_schedule_schema()
     seed_sample_data()
 
 
@@ -256,8 +233,20 @@ def record_request_metrics(response):
 
 @app.route('/', methods=["GET"])
 def index():
-    matches = Match.query.order_by(Match.match_date).all()
-    return render_template("index.html", matches=matches)
+    matches = Match.query.order_by(
+        Match.stage_order,
+        Match.group_name,
+        Match.match_date,
+        Match.match_number,
+    ).all()
+    stage_groups = []
+    for match in matches:
+        stage = match.stage or "Matches"
+        if not stage_groups or stage_groups[-1]["stage"] != stage:
+            stage_groups.append({"stage": stage, "matches": []})
+        stage_groups[-1]["matches"].append(match)
+
+    return render_template("index.html", matches=matches, stage_groups=stage_groups)
 
 @app.route('/health', methods=["GET"])
 def health():
