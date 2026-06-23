@@ -21,6 +21,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # This workflow is separate from app deployment so security checks can fail
+      # without blocking the basic deployment workflow during the learning phase.
+
       # Gitleaks scans the repository for accidentally committed secrets.
       - name: Run Gitleaks secret scan
         uses: gitleaks/gitleaks-action@v2
@@ -54,7 +57,7 @@ jobs:
 
       # Trivy scans the built Docker image for HIGH and CRITICAL vulnerabilities.
       - name: Run Trivy Docker image scan
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@master
         with:
           image-ref: seat-booking-app:security
           severity: HIGH,CRITICAL

@@ -25,26 +25,51 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
 
+      - name: Check Terraform formatting
+        run: terraform fmt -check
+
+      # Safe push check: initialize Terraform without a backend or AWS credentials.
+      - name: Initialize Terraform
+        run: terraform init -backend=false
+
+      - name: Validate Terraform configuration
+        run: terraform validate
+
+      # Apply is intentionally not automated on push. Run apply manually from a trusted machine,
+      # or add a protected manual workflow later.
+      - name: Explain manual apply policy
+        run: |
+          echo "Terraform apply is not run automatically."
+          echo "For now, run terraform plan/apply manually from a trusted local machine."
+
+      - name: Check whether AWS credentials are configured
+        id: aws_credentials
+        working-directory: .
+        run: |
+          if [ -n "${{ secrets.AWS_ACCESS_KEY_ID }}" ] && [ -n "${{ secrets.AWS_SECRET_ACCESS_KEY }}" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Configure AWS credentials
+        if: steps.aws_credentials.outputs.configured == 'true'
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-north-1
 
-      - name: Check Terraform formatting
-        run: terraform fmt -check
-
-      - name: Initialize Terraform
-        run: terraform init
-
-      - name: Validate Terraform configuration
-        run: terraform validate
-
       - name: Create Terraform plan
+        if: steps.aws_credentials.outputs.configured == 'true'
         run: |
           terraform plan \
             -input=false \
             -var="allowed_ssh_cidr=127.0.0.1/32" \
             -var="allowed_grafana_cidr=127.0.0.1/32" \
             -var="existing_key_pair_name=ci-placeholder-key"
+
+      - name: Skip Terraform plan when AWS credentials are missing
+        if: steps.aws_credentials.outputs.configured != 'true'
+        working-directory: .
+        run: echo "Skipping terraform plan because AWS credentials are not configured."
