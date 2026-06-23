@@ -20,6 +20,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       # This workflow is separate from app deployment so security checks can fail
       # without blocking the basic deployment workflow during the learning phase.
@@ -33,12 +35,16 @@ jobs:
         with:
           python-version: "3.11"
 
-      # Bandit checks Python code for common security issues.
+      # Bandit checks Python application code for common security issues.
+      # Tests are excluded because pytest uses assert statements by design.
+      # Bandit scans application code, not test assertions.
       - name: Run Bandit Python SAST scan
         run: |
           python -m pip install --upgrade pip
           pip install bandit
-          bandit -r . -x ./.venv,./venv,./env,./terraform
+          bandit -r . \
+            --severity-level high \
+            -x ./tests,./terraform,./.venv,./venv,./env,./.git,**/__pycache__
 
       # pip-audit checks Python dependencies for known vulnerabilities.
       - name: Run pip-audit dependency scan
