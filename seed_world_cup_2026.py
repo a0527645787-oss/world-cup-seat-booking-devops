@@ -24,6 +24,57 @@ STAGE_PRICES = {
     "Final": {"Regular": 400, "Premium": 900, "VIP": 1800},
 }
 
+TEAM_FLAGS = {
+    "Algeria": "🇩🇿",
+    "Argentina": "🇦🇷",
+    "Australia": "🇦🇺",
+    "Austria": "🇦🇹",
+    "Belgium": "🇧🇪",
+    "Bosnia and Herzegovina": "🇧🇦",
+    "Brazil": "🇧🇷",
+    "Cabo Verde": "🇨🇻",
+    "Canada": "🇨🇦",
+    "Colombia": "🇨🇴",
+    "Congo DR": "🇨🇩",
+    "Cote d'Ivoire": "🇨🇮",
+    "Croatia": "🇭🇷",
+    "Curacao": "🇨🇼",
+    "Czechia": "🇨🇿",
+    "Ecuador": "🇪🇨",
+    "Egypt": "🇪🇬",
+    "England": "🏴",
+    "France": "🇫🇷",
+    "Germany": "🇩🇪",
+    "Ghana": "🇬🇭",
+    "Haiti": "🇭🇹",
+    "Iran": "🇮🇷",
+    "Iraq": "🇮🇶",
+    "Japan": "🇯🇵",
+    "Jordan": "🇯🇴",
+    "Korea Republic": "🇰🇷",
+    "Mexico": "🇲🇽",
+    "Morocco": "🇲🇦",
+    "Netherlands": "🇳🇱",
+    "New Zealand": "🇳🇿",
+    "Norway": "🇳🇴",
+    "Panama": "🇵🇦",
+    "Paraguay": "🇵🇾",
+    "Portugal": "🇵🇹",
+    "Qatar": "🇶🇦",
+    "Saudi Arabia": "🇸🇦",
+    "Scotland": "🏴",
+    "Senegal": "🇸🇳",
+    "South Africa": "🇿🇦",
+    "Spain": "🇪🇸",
+    "Sweden": "🇸🇪",
+    "Switzerland": "🇨🇭",
+    "Tunisia": "🇹🇳",
+    "Turkiye": "🇹🇷",
+    "United States": "🇺🇸",
+    "Uruguay": "🇺🇾",
+    "Uzbekistan": "🇺🇿",
+}
+
 STADIUMS = {
     "Mexico City Stadium": ("Estadio Azteca / Mexico City Stadium", "Mexico City", 83000),
     "Guadalajara Stadium": ("Estadio Akron / Guadalajara Stadium", "Zapopan", 48071),
@@ -183,6 +234,9 @@ def all_matches():
     return group_stage_matches() + knockout_matches()
 
 
+CANONICAL_MATCH_NUMBERS = {match["match_number"] for match in all_matches()}
+
+
 def seat_capacity_for(stadium, seat_name):
     ratios = {"Regular": 0.55, "Premium": 0.18, "VIP": 0.03}
     return max(1, int(stadium.capacity * ratios[seat_name]))
@@ -203,7 +257,23 @@ def upsert_stage_prices(match, SeatType):
             ))
 
 
-def seed_world_cup_2026_data(db, Stadium, Match, SeatType):
+def cleanup_old_fixture_data(db, Match, SeatType, Booking=None):
+    old_matches = Match.query.filter(
+        (Match.match_number.is_(None)) | (~Match.match_number.in_(CANONICAL_MATCH_NUMBERS))
+    ).all()
+
+    for match in old_matches:
+        if Booking is not None:
+            Booking.query.filter_by(match_id=match.id).delete()
+        SeatType.query.filter_by(match_id=match.id).delete()
+        db.session.delete(match)
+
+    db.session.flush()
+
+
+def seed_world_cup_2026_data(db, Stadium, Match, SeatType, Booking=None):
+    cleanup_old_fixture_data(db, Match, SeatType, Booking)
+
     stadiums = {}
     for key, (name, city, capacity) in STADIUMS.items():
         stadium = Stadium.query.filter_by(name=name).first()
@@ -236,9 +306,9 @@ def seed_world_cup_2026_data(db, Stadium, Match, SeatType):
 
 
 if __name__ == "__main__":
-    from app import Match, SeatType, Stadium, app, db
+    from app import Booking, Match, SeatType, Stadium, app, db
 
     with app.app_context():
         db.create_all()
-        seed_world_cup_2026_data(db, Stadium, Match, SeatType)
+        seed_world_cup_2026_data(db, Stadium, Match, SeatType, Booking)
         print(f"Seeded {Match.query.filter(Match.match_number.isnot(None)).count()} World Cup 2026 matches.")

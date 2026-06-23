@@ -4,52 +4,59 @@
 
 {% block content %}
 <section class="hero tournament-hero">
-    <p class="eyebrow">World Cup 2026 Seat Booking</p>
-    <h1>Book seats by stage</h1>
+    <div class="tournament-branding">
+        {# Logo downloaded from the user-provided source URL. #}
+        <img class="tournament-logo" src="{{ url_for('static', filename='images/world-cup-2026-logo.png') }}" alt="World Cup 2026 tournament mark">
+        <div>
+            <p class="eyebrow">World Cup 2026 Seat Booking</p>
+            <h1>Fixtures in match order</h1>
+        </div>
+    </div>
     <p class="hero-text">
-        Browse sourced World Cup 2026 fixtures, from the group stage through the final.
-        Knockout matches use official-style placeholders until teams are known.
+        Browse the tournament schedule in chronological order. Knockout fixtures keep official-style placeholders until teams are known.
     </p>
 </section>
 
-{% for stage_group in stage_groups %}
-    <section class="stage-section" aria-labelledby="stage-{{ loop.index }}">
-        <h2 id="stage-{{ loop.index }}" class="stage-title">{{ stage_group.stage }}</h2>
+<section class="fixture-list" aria-label="World Cup 2026 fixtures">
+    {% for match in matches %}
+        <article class="match-card match-card-wide">
+            <div class="fixture-time">
+                <span class="stage-badge">{{ match.stage or "Match" }}</span>
+                <strong>{{ match.match_date.strftime("%d %b %Y") }}</strong>
+                <span>{{ match.match_date.strftime("%H:%M") }}</span>
+                <span>Match {{ match.match_number or "TBD" }}</span>
+                {% if match.group_name %}
+                    <span>{{ match.group_name }}</span>
+                {% endif %}
+            </div>
 
-        <div class="match-grid" aria-label="{{ stage_group.stage }} matches">
-            {% for match in stage_group.matches %}
-                <article class="match-card">
-                    <div class="match-card-header">
-                        <span class="match-date">{{ match.match_date.strftime("%d %b %Y, %H:%M") }}</span>
-                        <span class="stadium-city">{{ match.stadium.city }}</span>
+            <div class="fixture-main">
+                <div class="teams-line">
+                    <span class="team-name">
+                        <span class="flag-symbol">{{ team_flags.get(match.home_team, "🏆") }}</span>
+                        {{ match.home_team }}
+                    </span>
+                    <span class="versus">vs</span>
+                    <span class="team-name">
+                        <span class="flag-symbol">{{ team_flags.get(match.away_team, "🏆") }}</span>
+                        {{ match.away_team }}
+                    </span>
+                </div>
+                <p class="stadium-name">{{ match.stadium.name }} · {{ match.stadium.city }}</p>
+            </div>
+
+            <div class="fixture-prices">
+                {% for seat_type in match.seat_types %}
+                    <div class="compact-seat-row">
+                        <span>{{ seat_type.name }}</span>
+                        <strong>${{ "%.0f"|format(seat_type.price) }}</strong>
+                        <small>{{ seat_type.available_seats }} seats</small>
                     </div>
+                {% endfor %}
+            </div>
 
-                    <div class="match-meta">
-                        <span>Match {{ match.match_number or "TBD" }}</span>
-                        {% if match.group_name %}
-                            <span>{{ match.group_name }}</span>
-                        {% endif %}
-                    </div>
-
-                    <h3>{{ match.home_team }} vs {{ match.away_team }}</h3>
-                    <p class="stadium-name">{{ match.stadium.name }}</p>
-
-                    <div class="seat-list">
-                        {% for seat_type in match.seat_types %}
-                            <div class="seat-row">
-                                <div>
-                                    <strong>{{ seat_type.name }}</strong>
-                                    <span>{{ seat_type.available_seats }} seats available</span>
-                                </div>
-                                <span class="seat-price">${{ "%.0f"|format(seat_type.price) }}</span>
-                            </div>
-                        {% endfor %}
-                    </div>
-
-                    <a class="button" href="{{ url_for('match_detail', match_id=match.id) }}">Choose seats</a>
-                </article>
-            {% endfor %}
-        </div>
-    </section>
-{% endfor %}
+            <a class="button fixture-button" href="{{ url_for('match_detail', match_id=match.id) }}">Choose seats</a>
+        </article>
+    {% endfor %}
+</section>
 {% endblock %}

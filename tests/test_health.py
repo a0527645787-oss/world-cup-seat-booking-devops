@@ -206,15 +206,27 @@ def test_world_cup_seed_creates_matches_without_duplicates(client):
     with app.app_context():
         db.drop_all()
         db.create_all()
+        old_stadium = Stadium(name="Old Demo Stadium", city="Old City", capacity=1000)
+        old_match = Match(
+            home_team="Old Team A",
+            away_team="Old Team B",
+            match_date=datetime(2026, 1, 1, 12, 0),
+            stadium=old_stadium,
+        )
+        old_match.seat_types = [SeatType(name="Regular", price=1.0, total_seats=10)]
+        db.session.add(old_match)
+        db.session.commit()
 
         seed_world_cup_2026_data(db, Stadium, Match, SeatType)
         first_count = Match.query.filter(Match.match_number.isnot(None)).count()
+        stale_count = Match.query.filter(Match.match_number.is_(None)).count()
 
         seed_world_cup_2026_data(db, Stadium, Match, SeatType)
         second_count = Match.query.filter(Match.match_number.isnot(None)).count()
 
         assert first_count == 104
         assert second_count == 104
+        assert stale_count == 0
 
 
 def test_stage_based_pricing_is_seeded(client):

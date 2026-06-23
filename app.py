@@ -170,7 +170,7 @@ def ensure_match_schedule_schema():
 def seed_sample_data():
     from seed_world_cup_2026 import seed_world_cup_2026_data
 
-    seed_world_cup_2026_data(db, Stadium, Match, SeatType)
+    seed_world_cup_2026_data(db, Stadium, Match, SeatType, Booking)
 
 
 def admin_required(view_function):
@@ -234,19 +234,12 @@ def record_request_metrics(response):
 @app.route('/', methods=["GET"])
 def index():
     matches = Match.query.order_by(
-        Match.stage_order,
-        Match.group_name,
         Match.match_date,
         Match.match_number,
     ).all()
-    stage_groups = []
-    for match in matches:
-        stage = match.stage or "Matches"
-        if not stage_groups or stage_groups[-1]["stage"] != stage:
-            stage_groups.append({"stage": stage, "matches": []})
-        stage_groups[-1]["matches"].append(match)
+    from seed_world_cup_2026 import TEAM_FLAGS
 
-    return render_template("index.html", matches=matches, stage_groups=stage_groups)
+    return render_template("index.html", matches=matches, team_flags=TEAM_FLAGS)
 
 @app.route('/health', methods=["GET"])
 def health():
