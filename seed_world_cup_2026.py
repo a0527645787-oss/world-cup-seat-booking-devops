@@ -62,7 +62,7 @@ TEAM_FLAGS = {
     "Portugal": "🇵🇹",
     "Qatar": "🇶🇦",
     "Saudi Arabia": "🇸🇦",
-    "Scotland": "🏴",
+    "Scotland": "",
     "Senegal": "🇸🇳",
     "South Africa": "🇿🇦",
     "Spain": "🇪🇸",

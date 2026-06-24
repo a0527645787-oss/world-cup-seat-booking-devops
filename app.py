@@ -73,6 +73,7 @@ ADMIN_PASSWORD = get_config_value(
     unsafe_value="admin123",
 )
 
+
 class Stadium(db.Model):
     __tablename__ = "stadiums"
 
