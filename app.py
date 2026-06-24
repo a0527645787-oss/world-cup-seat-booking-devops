@@ -7,9 +7,12 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import inspect, text
 from prometheus_client import CONTENT_TYPE_LATEST, Counter, generate_latest
 import os
+from threading import Lock
 app = Flask(__name__)
 APP_ENV = os.getenv("APP_ENV", "development").lower()
 IS_PRODUCTION = APP_ENV == "production"
+DB_INITIALIZED = False
+DB_INIT_LOCK = Lock()
 HTTP_REQUESTS_TOTAL = Counter(
     "flask_http_requests_total",
     "Total HTTP requests handled by the Flask app",
@@ -209,14 +212,25 @@ def build_match_statistics():
     return statistics
 
 
-# create the DB on demand
-@app.before_first_request
 def create_tables():
     if app.config.get("TESTING"):
         return
     db.create_all()
     ensure_match_schedule_schema()
     seed_sample_data()
+
+
+@app.before_request
+def initialize_database_once():
+    global DB_INITIALIZED
+
+    if DB_INITIALIZED or app.config.get("TESTING"):
+        return
+
+    with DB_INIT_LOCK:
+        if not DB_INITIALIZED:
+            create_tables()
+            DB_INITIALIZED = True
 
 
 @app.after_request

@@ -16,28 +16,8 @@ def client():
     with app.app_context():
         db.drop_all()
         db.create_all()
-        stadium = Stadium(
-            name="Test Stadium",
-            city="Test City",
-            capacity=50000,
-        )
-        match = Match(
-            match_number=999,
-            stage="Group Stage",
-            stage_order=1,
-            group_name="Group Test",
-            home_team="Team A",
-            away_team="Team B",
-            home_placeholder=False,
-            away_placeholder=False,
-            match_date=datetime(2026, 6, 11, 20, 0),
-            kickoff_time="20:00",
-            stadium=stadium,
-        )
-        match.seat_types = [
-            SeatType(name="Regular", price=100.0, total_seats=100),
-            SeatType(name="VIP", price=500.0, total_seats=10),
-        ]
+        seed_world_cup_2026_data(db, Stadium, Match, SeatType)
+        match = Match.query.filter_by(match_number=1).first()
         booking = Booking(
             booking_code="TEST-CODE-123",
             customer_name="Test Customer",
@@ -55,7 +35,6 @@ def client():
             match=match,
             seat_type=match.seat_types[0],
         )
-        db.session.add(match)
         db.session.add(booking)
         db.session.add(cancelled_booking)
         db.session.commit()
@@ -78,8 +57,12 @@ def test_home_page_returns_200(client):
     response = client.get("/")
 
     assert response.status_code == 200
-    assert b"Team A vs Team B" in response.data
+    assert b"World Cup 2026 Seat Booking" in response.data
+    assert b"Mexico" in response.data
+    assert b"South Africa" in response.data
+    assert b"Choose seats" in response.data
     assert b"Group Stage" in response.data
+    assert b"Team A vs Team B" not in response.data
 
 
 def test_match_detail_page_returns_200(client):
@@ -191,13 +174,14 @@ def test_admin_logout_clears_session(client):
 
 def test_match_model_supports_world_cup_schedule_fields(client):
     with app.app_context():
-        match = Match.query.first()
+        match = Match.query.filter_by(match_number=1).first()
 
-        assert match.match_number == 999
+        assert match.match_number == 1
         assert match.stage == "Group Stage"
         assert match.stage_order == 1
-        assert match.group_name == "Group Test"
-        assert match.kickoff_time == "20:00"
+        assert match.group_name == "Group A"
+        assert match.home_team == "Mexico"
+        assert match.away_team == "South Africa"
         assert match.home_placeholder is False
         assert match.away_placeholder is False
 
