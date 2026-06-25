@@ -84,9 +84,13 @@ def test_manage_booking_page_returns_200(client):
 
 def test_about_page_returns_200(client):
     response = client.get("/about")
+    page = response.data.lower()
 
     assert response.status_code == 200
-    assert b"World Cup seat booking demo app" in response.data
+    assert b"demo" in page or b"educational" in page
+    assert b"not an official" in page
+    assert b"fifa" in page
+    assert b"tournament organizer" in page
 
 
 def test_invalid_booking_lookup_shows_error(client):
