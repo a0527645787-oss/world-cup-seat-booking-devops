@@ -53,5 +53,5 @@ variable "public_key_path" {
 variable "existing_eip_allocation_id" {
   description = "Optional existing Elastic IP allocation ID to associate with this instance. If null, Terraform creates a new Elastic IP."
   type        = string
-  default     = null
+  default     = "eipalloc-0272aaa4d031198bb"
 }
