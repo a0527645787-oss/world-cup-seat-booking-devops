@@ -377,7 +377,11 @@ erDiagram
 
 ## פרק 9: אריזת האפליקציה ב־Docker
 
-בפרויקט נעשה שימוש ב־Docker כדי לארוז את האפליקציה לסביבת הרצה אחידה. קובץ `Dockerfile` מגדיר את שלבי הבנייה:
+בפרויקט נעשה שימוש ב־Docker כדי לארוז את האפליקציה לסביבת הרצה אחידה. הרכיב המרכזי בתהליך זה הוא Docker image. אימג׳ הוא תבנית מוכנה להרצה, הכוללת את מערכת הבסיס, קוד האפליקציה, התלויות, ההגדרות ופקודת ההפעלה. כאשר מריצים אימג׳, נוצר ממנו container פעיל.
+
+היתרון המרכזי של Docker image הוא עקביות. אותו image שנבנה ונבדק ב־GitHub Actions הוא גם ה־image שנשלח ל־Docker Hub ונמשך לשרת EC2. כך מצטמצם הפער בין סביבת הבדיקה לבין סביבת ההרצה.
+
+קובץ `Dockerfile` מגדיר את שלבי הבנייה של האימג׳:
 
 ```dockerfile
 FROM python:3.11-slim
@@ -395,7 +399,7 @@ COPY . .
 CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:5000", "app:app"]
 ```
 
-ה־image מתחיל מ־`python:3.11-slim`, מתקין את התלויות מתוך `requirements.txt`, מעתיק את קבצי הפרויקט ומגדיר את פקודת ההרצה של Gunicorn.
+האימג׳ מתחיל מ־`python:3.11-slim`, מתקין את התלויות מתוך `requirements.txt`, מעתיק את קבצי הפרויקט ומגדיר את פקודת ההרצה של Gunicorn.
 
 ב־CI/CD אותו Dockerfile משמש לבניית image שנבדק, נסרק ומפורסם ל־Docker Hub.
 
@@ -687,6 +691,76 @@ def test_health_route(client):
 
 הבדיקה חשובה משום שאותו endpoint משמש גם לאימות deployment.
 
+להלן תקציר קוד קצר של כלל הבדיקות המרכזיות בקובץ. הקטע מציג את שמות הבדיקות ואת סוג האימות שכל אחת מבצעת, בלי להעמיס את כל קובץ הבדיקות:
+
+```python
+def test_health_route(client):
+    assert client.get("/health").get_json() == {"status": "ok"}
+
+def test_home_page_returns_200(client):
+    response = client.get("/")
+    assert response.status_code == 200
+    assert b"World Cup 2026 Seat Booking" in response.data
+
+def test_match_detail_page_returns_200(client):
+    response = client.get(f"/matches/{Match.query.first().id}")
+    assert response.status_code == 200
+    assert b"Book seats" in response.data
+
+def test_manage_booking_page_returns_200(client):
+    assert client.get("/manage-booking").status_code == 200
+
+def test_about_page_returns_200(client):
+    assert client.get("/about").status_code == 200
+
+def test_invalid_booking_lookup_shows_error(client):
+    response = client.post("/manage-booking", data={...})
+    assert b"Booking was not found" in response.data
+
+def test_booking_detail_page_returns_200(client):
+    response = client.get("/bookings/TEST-CODE-123")
+    assert b"TEST-CODE-123" in response.data
+
+def test_cancel_route_sets_booking_cancelled(client):
+    client.post("/bookings/TEST-CODE-123/cancel")
+    booking = Booking.query.filter_by(booking_code="TEST-CODE-123").first()
+    assert booking.is_cancelled is True
+
+def test_admin_bookings_page_renders_statistics(client):
+    response = client.get("/admin/bookings")
+    assert b"Match statistics" in response.data
+
+def test_admin_bookings_redirects_when_not_logged_in(client):
+    assert client.get("/admin/bookings").status_code == 302
+
+def test_admin_login_rejects_invalid_password(client):
+    response = client.post("/admin/login", data={"password": "wrong-password"})
+    assert b"Invalid admin password" in response.data
+
+def test_admin_login_accepts_configured_password(client):
+    response = client.post("/admin/login", data={"password": ADMIN_PASSWORD})
+    assert response.status_code == 302
+
+def test_admin_logout_clears_session(client):
+    assert client.get("/admin/logout").status_code == 302
+
+def test_match_model_supports_world_cup_schedule_fields(client):
+    match = Match.query.filter_by(match_number=1).first()
+    assert match.stage == "Group Stage"
+
+def test_world_cup_seed_creates_matches_without_duplicates(client):
+    seed_world_cup_2026_data(db, Stadium, Match, SeatType)
+    assert Match.query.filter(Match.match_number.isnot(None)).count() == 104
+
+def test_stage_based_pricing_is_seeded(client):
+    assert final_prices["VIP"] == STAGE_PRICES["Final"]["VIP"]
+
+def test_seed_has_group_stage_and_knockout_placeholder(client):
+    assert knockout_match.home_placeholder is True
+```
+
+הבדיקות מכסות routes פשוטים, פעולות משתמש, אזור ניהול ותקינות נתוני seed. לכן הן משתלבות היטב בשלב ה־CI לפני בניית Docker image.
+
 ---
 
 ## פרק 18: Terraform ותשתית כקוד
@@ -754,40 +828,67 @@ Terraform מכין את השרת והתשתית, ולאחר מכן תהליך ה
 
 ## פרק 19: מבנה תיקיות הפרויקט
 
-מבנה התיקיות המרכזי:
+מבנה התיקיות והקבצים המרכזי של הריפוזיטורי:
 
 ```text
 seat-booking-devops/
-|-- app.py
-|-- requirements.txt
-|-- Dockerfile
-|-- docker-compose.yml
-|-- docker-compose.prod.yml
-|-- seed_world_cup_2026.py
 |-- .env.example
+|-- .gitignore
+|-- app.py
+|-- Dockerfile
+|-- docker-compose.prod.yml
+|-- docker-compose.yml
+|-- README.md
+|-- requirements.txt
+|-- seed_world_cup_2026.py
+|-- .github/
+|   `-- workflows/
+|       |-- ci-cd.yml
+|       |-- terraform-destroy.yml
+|       `-- terraform.yml
 |-- db/
 |   `-- mysqld.cnf
-|-- nginx/
-|   `-- nginx.conf
+|-- docs/
+|   |-- project-book-summary.md
+|   `-- project-book.md
 |-- monitoring/
+|   |-- README.md
 |   |-- health_check.sh
 |   |-- install_cron.sh
+|   |-- grafana/
+|   |   `-- provisioning/
+|   |       `-- datasources/
+|   |           `-- prometheus.yml
 |   |-- prometheus/
-|   `-- grafana/
+|   |   `-- prometheus.yml
+|-- nginx/
+|   `-- nginx.conf
 |-- static/
+|   |-- css/
+|   |   `-- main.css
+|   `-- images/
+|       |-- 2c15e0250131057.6a2c9439baacd.png
+|       |-- Copa_America_game_between_Columbia_vs_Peru_at_the_MetLife_Stadium.jpg.webp
+|       |-- stadium-background.jpg
+|       `-- world-cup-2026-logo.png
 |-- templates/
+|   |-- about.html
+|   |-- admin_bookings.html
+|   |-- admin_login.html
+|   |-- base.html
+|   |-- booking_success.html
+|   |-- index.html
+|   |-- manage_booking.html
+|   `-- match_detail.html
 |-- terraform/
+|   |-- .terraform.lock.hcl
+|   |-- README.md
 |   |-- main.tf
-|   |-- variables.tf
 |   |-- outputs.tf
-|   `-- user_data.sh
-|-- tests/
-|   `-- test_health.py
-`-- .github/
-    `-- workflows/
-        |-- ci-cd.yml
-        |-- terraform.yml
-        `-- terraform-destroy.yml
+|   |-- user_data.sh
+|   `-- variables.tf
+`-- tests/
+    `-- test_health.py
 ```
 
 `app.py` מרכז את קוד האפליקציה. `templates/` ו־`static/` אחראיות לממשק. `nginx/` מגדירה את ה־reverse proxy. `monitoring/` כוללת health checks והגדרות Prometheus/Grafana. `terraform/` כוללת תשתית כקוד. `.github/workflows/` כוללת את תהליכי האוטומציה.
@@ -796,25 +897,29 @@ seat-booking-devops/
 
 ## פרק 20: בעיות מרכזיות ופתרונות
 
-### גישה ל־SSH והגבלת CIDR
+### תקלות מרכזיות ומה נלמד מהן
 
-בעיה מרכזית בפריסה ל־EC2 היא פתיחת SSH בצורה בטוחה. הפתרון הוא שימוש ב־Security Group שמגביל את פורט `22` ל־CIDR מוגדר.
+במהלך העבודה על הפרויקט עלו כמה נקודות תפעוליות חשובות. נקודות אלה משקפות תהליך למידה מקצועי בעבודה עם DevOps, ענן ותשתית כקוד, והן חיזקו את ההפרדה בין תשתית, אפליקציה ותהליך פריסה.
 
-### Elastic IP
+**בעיה:** בתחילת העבודה Terraform הורץ מתוך GitHub Actions ללא state קבוע. מכיוון ש־GitHub Actions runners הם זמניים, לא הייתה דרך אמינה לשמור זיכרון מתמשך של משאבי AWS שכבר נוצרו.
 
-כדי לשמור כתובת ציבורית יציבה, הפרויקט מאפשר שימוש ב־Elastic IP. ניתן ליצור Elastic IP חדש או לשייך כתובת קיימת לפי הצורך.
+**פתרון:** ה־state הועבר ל־S3 remote backend תחת `prod/terraform.tfstate`. כך פעולות `plan`, `apply` ו־`destroy` עובדות מול אותו מצב תשתית, גם כאשר ההרצה מתבצעת מ־runner חדש.
 
-### התקנת Docker על שרת חדש
+**בעיה:** ערך אמיתי של Elastic IP Allocation ID אינו צריך להיות מקודד ישירות בתוך `variables.tf`, משום שזה הופך את קוד Terraform לפחות כללי ותלוי בסביבה מסוימת.
 
-שרת EC2 חדש אינו מוכן להרצת Docker Compose. הקובץ `user_data.sh` פותר זאת באמצעות התקנת Docker, Docker Compose plugin ו־Git בזמן הקמת השרת.
+**פתרון:** הקוד נשאר גנרי עם `default = null`, וערך אמיתי מועבר רק לפי צורך דרך GitHub Secrets באמצעות `TF_VAR_existing_eip_allocation_id`.
 
-### Terraform state
+**בעיה:** חיבור SSH לשרת עלול להיחסם כאשר ה־Security Group מאפשר CIDR שאינו תואם לכתובת הציבורית ש־AWS מזהה בפועל.
 
-כאשר Terraform רץ בסביבת GitHub Actions, state מקומי אינו מספיק. הפתרון הוא S3 remote backend ששומר state קבוע תחת `prod/terraform.tfstate`.
+**פתרון:** האבחון נעשה באמצעות בדיקת קישוריות לפורט `22`, פתיחה זמנית לצורך בדיקה, ולאחר מכן החזרת ההגבלה ל־CIDR בטוח ומתאים.
 
-### Health check ו־Rollback
+**בעיה:** חשוב להפריד בין יצירת תשתית לבין פריסת אפליקציה, כדי שהתהליך יהיה ברור וניתן לתחזוקה.
 
-Deployment יכול להיכשל גם אחרי build מוצלח. לכן ה־workflow בודק את `/health` אחרי הפריסה. אם הבדיקה נכשלת, מתבצע rollback ל־`IMAGE_TAG` הקודם.
+**פתרון:** Terraform מנהל משאבי תשתית כמו EC2, Security Group ו־Elastic IP. לעומת זאת, GitHub Actions מנהל את מחזור חיי האפליקציה: בדיקות, בניית Docker image, דחיפה ל־Docker Hub, deployment, health check ו־rollback.
+
+**בעיה:** פורט `5000` מתאים להרצת Flask בתוך הסביבה הפנימית, אך בסביבת production רצוי שהמשתמשים ייגשו דרך נקודת כניסה רגילה ומסודרת.
+
+**פתרון:** האפליקציה נחשפת דרך Nginx בפורט `80`, בעוד Flask/Gunicorn נשארים מאחורי ה־reverse proxy. כך מתקבלת גישה נוחה בדפדפן והפרדה נכונה בין שכבת הכניסה לבין שכבת האפליקציה.
 
 ---
 
@@ -854,19 +959,6 @@ Deployment יכול להיכשל גם אחרי build מוצלח. לכן ה־work
 | `terraform validate` | בדיקת תקינות Terraform |
 | `terraform plan` | תכנון שינויי תשתית |
 | `terraform apply` | החלת תשתית |
-
-### מקומות מומלצים לצילומי מסך
-
-- עמוד הבית של האפליקציה.
-- עמוד פרטי משחק.
-- עמוד אישור הזמנה.
-- מסך admin bookings.
-- GitHub Actions successful run.
-- Docker Hub repository.
-- Grafana dashboard.
-- Prometheus targets.
-- AWS EC2 instance.
-- Terraform plan/apply output.
 
 ### הסבר קצר על workflows
 
