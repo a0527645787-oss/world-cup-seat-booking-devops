@@ -1,6 +1,13 @@
 terraform {
   required_version = ">= 1.5.0"
 
+  backend "s3" {
+    bucket       = "seat-booking-devops-tfstate-shlomo-2026"
+    key          = "prod/terraform.tfstate"
+    region       = "eu-north-1"
+    use_lockfile = true
+  }
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
