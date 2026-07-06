@@ -2,204 +2,190 @@
 
 ## 1. שער
 
-**שם הפרויקט:** World Cup Seat Booking DevOps Project  
-**תחום:** DevOps, Web Application, Cloud Infrastructure, CI/CD, Monitoring  
-**טכנולוגיות מרכזיות:** Flask, MySQL, SQLAlchemy, Docker, Docker Compose, Nginx, Gunicorn, GitHub Actions, Docker Hub, AWS EC2, Terraform, Prometheus, Grafana  
-**תוצר:** מערכת Web להזמנת מקומות למשחקי World Cup 2026, עם תהליך בנייה, בדיקות, הפצה, פריסה וניטור.
-
-המסמך נכתב על בסיס סריקה של קבצי הריפוזיטורי בפועל. רכיבים שלא נמצאו בקבצי הפרויקט אינם מוצגים כחלק מהמערכת.
-
----
-
-## 2. תקציר
-
-הפרויקט הוא מערכת Web להזמנת מקומות למשחקי World Cup 2026. המשתמש יכול לצפות ברשימת משחקים, לבחור משחק, לבחור סוג מושב, לבצע הזמנה, לצפות בפרטי ההזמנה ולבטל הזמנה קיימת. בנוסף קיימת עמדת ניהול בסיסית למנהל, הכוללת התחברות וצפייה בהזמנות ובסטטיסטיקות משחקים.
-
-מבחינת DevOps, הפרויקט מדגים מחזור חיים מלא של אפליקציה: פיתוח אפליקציית Flask, חיבור למסד נתונים MySQL, הרצה בקונטיינרים, Reverse Proxy באמצעות Nginx, הרצת האפליקציה ב־Gunicorn, בדיקות אוטומטיות, בניית Docker image, פרסום ל־Docker Hub, פריסה לשרת AWS EC2 באמצעות GitHub Actions, וניטור באמצעות `/health`, `/metrics`, Prometheus ו־Grafana.
-
-המערכת אינה מבוססת Kubernetes, Jenkins, Load Balancer, HTTPS, Domain, RDS או REST API אפליקטיבי. לא נמצא בקבצי הפרויקט שימוש בפועל ברכיבים אלו. המערכת מבוססת Flask routes רגילים, וכן כוללת endpoints טכניים כגון `/health` ו־`/metrics` לצורך בדיקות וניטור.
-
-Terraform קיים בפרויקט ומשמש ליצירת תשתית AWS: שרת EC2, Security Group, Elastic IP, Key Pair במידת הצורך, והתקנת Docker/Git על השרת באמצעות `user_data.sh`. חשוב להפריד בין תחומי האחריות: Terraform יוצר תשתית, ואילו GitHub Actions מבצע Deployment של האפליקציה.
+**Project name:** World Cup Seat Booking DevOps Project  
+**Student name:** ______________________________  
+**ID:** ______________________________  
+**College:** ______________________________  
+**Program:** DevOps  
+**Instructor:** ______________________________  
+**Submission date:** ______________________________  
 
 ---
 
-## 3. תוכן עניינים
+## 2. תוכן עניינים
 
 1. שער  
-2. תקציר  
-3. תוכן עניינים  
+2. תוכן עניינים  
+3. תקציר  
 4. מבוא  
-5. מטרת הפרויקט  
-6. תיאור הבעיה  
-7. פתרון מוצע  
-8. ניתוח מערכת  
-9. תכנון מערכת  
-10. ארכיטקטורת המערכת  
-11. בסיס הנתונים  
-12. מבנה הקבצים והתיקיות  
-13. תיאור רכיבי המערכת  
-14. Docker  
-15. Docker Compose  
-16. Nginx  
-17. Flask / Gunicorn  
-18. MySQL / SQLAlchemy  
-19. Git ו־GitHub  
-20. GitHub Actions  
-21. Docker Hub / Registry  
-22. AWS EC2  
-23. Security Groups  
-24. Terraform  
-25. Prometheus  
-26. Grafana  
-27. Health Check ו־Monitoring  
-28. בדיקות  
-29. בעיות שהתגלו במהלך הפיתוח ופתרונות  
-30. אבטחה ו־Secrets  
-31. סיכום ומסקנות  
-32. נספחים  
+5. רקע DevOps  
+6. מטרות הפרויקט  
+7. ניתוח מערכת  
+8. ארכיטקטורת המערכת  
+9. מבנה תיקיות הפרויקט  
+10. לוגיקת האפליקציה  
+11. תכנון בסיס הנתונים  
+12. Docker  
+13. Docker Compose  
+14. Nginx ו־Gunicorn  
+15. GitHub Actions CI/CD  
+16. Docker Hub  
+17. AWS EC2 ו־Security Groups  
+18. Monitoring  
+19. DevSecOps  
+20. Terraform  
+21. Testing  
+22. בעיות ופתרונות במהלך הפיתוח  
+23. אבטחה ו־Secrets  
+24. סיכום ושיפורים עתידיים  
+25. נספחים  
+
+---
+
+## 3. תקציר
+
+פרויקט זה מציג מערכת Web להזמנת מקומות למשחקי World Cup 2026, שנבנתה סביב אפליקציית Flask ומסד נתונים MySQL. המערכת מאפשרת צפייה במשחקים, בחירת סוג מושב, יצירת הזמנה, ניהול הזמנה קיימת, ביטול הזמנה, וצפייה ניהולית בהזמנות ובסטטיסטיקות.
+
+מוקד הפרויקט הוא מחזור חיים מלא של DevOps. האפליקציה נארזת באמצעות Docker, מורצת יחד עם שירותים נוספים באמצעות Docker Compose, נחשפת דרך Nginx, רצה באמצעות Gunicorn, נבדקת ומופצת דרך GitHub Actions, נשמרת כ־Docker image ב־Docker Hub, ונפרסת לשרת AWS EC2.
+
+בנוסף, הפרויקט כולל שכבת ניטור המבוססת על health endpoint, metrics endpoint, Prometheus ו־Grafana. שכבת התשתית מנוהלת באמצעות Terraform, כולל שימוש ב־S3 remote backend לשמירת state קבוע.
 
 ---
 
 ## 4. מבוא
 
-פרויקט DevOps נמדד לא רק לפי קוד האפליקציה, אלא לפי היכולת להעביר את הקוד בצורה מסודרת מסביבת פיתוח לסביבת הרצה. בפרויקט זה נבנתה אפליקציית Flask קטנה וברורה, וסביבה הוקמה מעטפת DevOps מלאה: Docker image, Docker Compose, CI/CD, שרת EC2, ניטור בסיסי ותשתית Terraform.
+הפרויקט נבנה כפרויקט גמר בתחום DevOps. מטרתו אינה לבנות מערכת כרטיסים מסחרית מורכבת, אלא להציג מערכת Web פשוטה וברורה שסביבה מיושם תהליך DevOps מלא מקצה לקצה.
 
-הדומיין של הפרויקט הוא הזמנת מקומות למשחקי World Cup 2026. הקבצים כוללים נתוני seed עבור משחקים, אצטדיונים, סוגי מושבים ומחירים לפי שלב בטורניר. המטרה אינה לבנות מערכת מסחרית מלאה, אלא להציג פרויקט גמר שמדגים עקרונות אמיתיים של פיתוח, אריזה, פריסה, ניטור ותפעול.
+ליבת המערכת היא אפליקציית Flask שמציגה משחקי World Cup 2026 ומאפשרת הזמנת מקומות. סביב האפליקציה נבנו תשתיות ותהליכים שמדמים סביבת production: מסד נתונים MySQL, הפעלה בקונטיינרים, reverse proxy, pipeline אוטומטי, deployment לשרת ענן, בדיקות, ניטור וניהול תשתית כקוד.
+
+מבנה זה מאפשר לבחון את הפרויקט גם מהצד האפליקטיבי וגם מהצד התפעולי. הבוחן יכול לראות כיצד קוד משתנה, נבדק, נארז, מופץ, נפרס ומנוטר.
 
 ---
 
-## 5. מטרת הפרויקט
+## 5. רקע DevOps
 
-מטרת הפרויקט היא לבנות מערכת Web עובדת ולחבר אליה תהליך DevOps מלא וברור:
+גישת DevOps מחברת בין פיתוח תוכנה לבין תפעול מערכות. בעולם מסורתי, צוות פיתוח עשוי לכתוב קוד ולהעביר אותו ידנית לצוות תפעול. תהליך כזה עלול ליצור תקלות, חוסר עקביות בין סביבות, קושי בשחזור גרסאות וזמן תגובה איטי.
 
-- אפליקציית Flask עם תבניות HTML.
+בגישת DevOps, התהליך הופך לאוטומטי, מדיד וחוזר על עצמו. הקוד נשמר במערכת ניהול גרסאות, בדיקות רצות אוטומטית, סביבת ההרצה מוגדרת בקבצים, ותהליך הפריסה מתבצע בצורה מבוקרת.
+
+בפרויקט זה עקרונות DevOps באים לידי ביטוי בכמה שכבות:
+
+- ניהול קוד באמצעות Git ו־GitHub.
+- בדיקות אוטומטיות באמצעות pytest.
+- אריזת האפליקציה באמצעות Docker.
+- הרצת כמה שירותים יחד באמצעות Docker Compose.
+- פרסום Docker image ל־Docker Hub.
+- פריסה אוטומטית ל־AWS EC2 באמצעות GitHub Actions.
+- ניטור באמצעות health checks, Prometheus ו־Grafana.
+- ניהול תשתית באמצעות Terraform.
+- בדיקות אבטחה כחלק מתהליך DevSecOps.
+
+---
+
+## 6. מטרות הפרויקט
+
+מטרות הפרויקט מתחלקות למטרות אפליקטיביות ולמטרות DevOps.
+
+### 6.1 מטרות אפליקטיביות
+
+- בניית אפליקציית Flask להצגת משחקים והזמנת מקומות.
 - שמירת מידע במסד נתונים MySQL.
-- שימוש ב־SQLAlchemy ORM למיפוי מודלים לטבלאות.
-- הרצה בקונטיינרים עם Docker.
-- ניהול כמה שירותים יחד עם Docker Compose.
-- שימוש ב־Nginx כ־Reverse Proxy.
-- הפעלת Flask ב־Gunicorn בסביבת Docker.
-- בדיקות אוטומטיות עם pytest.
-- CI/CD עם GitHub Actions.
-- בניית Docker image ופרסום ל־Docker Hub.
-- Deployment לשרת AWS EC2 דרך SSH.
-- ניטור באמצעות `/health`, `/metrics`, Prometheus, Grafana וסקריפט cron.
-- יצירת תשתית AWS באמצעות Terraform.
+- שימוש ב־SQLAlchemy ORM לעבודה נוחה מול טבלאות.
+- יצירת מנגנון הזמנה הכולל קוד הזמנה ייחודי.
+- תמיכה בביטול הזמנות.
+- הוספת אזור ניהול בסיסי לצפייה בהזמנות ובסטטיסטיקות.
+
+### 6.2 מטרות DevOps
+
+- אריזת האפליקציה כ־Docker image.
+- שימוש בכלי Docker Compose להרצת כמה שירותים יחד.
+- שימוש ב־Nginx כ־reverse proxy.
+- הרצת Flask באמצעות Gunicorn בסביבת container.
+- בניית CI/CD pipeline באמצעות GitHub Actions.
+- פרסום images ל־Docker Hub.
+- פריסה לשרת AWS EC2.
+- ניטור באמצעות `/health`, `/metrics`, Prometheus ו־Grafana.
+- הוספת בדיקות אבטחה באמצעות כלי DevSecOps.
+- ניהול תשתית AWS באמצעות Terraform.
 
 ---
 
-## 6. תיאור הבעיה
+## 7. ניתוח מערכת
 
-בפרויקטי Web רבים הבעיה אינה רק כתיבת הקוד. גם אם האפליקציה עובדת מקומית, עדיין צריך לפתור שאלות תפעוליות:
+### 7.1 משתמשים ושחקנים במערכת
 
-- איך מריצים את אותה אפליקציה בסביבה נקייה?
-- איך שומרים נתונים בצורה מתמשכת?
-- איך מעדכנים גרסה בשרת בלי לבצע פעולות ידניות רבות?
-- איך בודקים שהאפליקציה חיה אחרי deployment?
-- איך חוזרים לגרסה קודמת אם deployment נכשל?
-- איך רואים תעבורה, כשלים ובקשות בזמן אמת?
-- איך יוצרים תשתית בענן בצורה מתועדת וחוזרת?
-
-הפרויקט נותן מענה לשאלות אלו באמצעות כלים מקובלים בעולם DevOps, אך נשאר מספיק קטן כדי שאפשר יהיה להסביר אותו מקצה לקצה.
-
----
-
-## 7. פתרון מוצע
-
-הפתרון המוצע הוא אפליקציית Flask שמורצת בתוך Docker container, מתחברת ל־MySQL container, ונחשפת למשתמש דרך Nginx. בסביבת production מתווספים Prometheus ו־Grafana לצורך ניטור.
-
-ה־CI/CD מבוצע דרך GitHub Actions:
-
-1. הרצת בדיקות.
-2. בניית Docker image.
-3. פרסום image ל־Docker Hub.
-4. התחברות ל־EC2 דרך SSH.
-5. עדכון הקוד וה־`IMAGE_TAG`.
-6. הרצת `docker compose`.
-7. בדיקת `/health`.
-8. Rollback אוטומטי אם health check נכשל.
-
-Terraform משמש לשכבת התשתית: יצירת EC2, Security Group, Elastic IP והתקנת Docker/Git. לאחר שהתשתית קיימת, GitHub Actions אחראי לפריסת האפליקציה.
-
----
-
-## 8. ניתוח מערכת
-
-### 8.1 משתמשים במערכת
-
-| Role | Description |
+| Actor | תפקיד |
 | --- | --- |
-| Regular user | צופה במשחקים, מזמין מקומות, מנהל הזמנה קיימת ומבטל הזמנה |
-| Admin user | מתחבר למסך ניהול וצופה בהזמנות ובסטטיסטיקות |
-| Developer | דוחף קוד ל־GitHub ומפעיל את תהליך ה־CI/CD |
-| GitHub Actions runner | מריץ בדיקות, בונה image, מפרסם ל־Docker Hub ומבצע deployment |
-| Prometheus | מושך metrics מ־`/metrics` |
-| Grafana | מציג נתונים מ־Prometheus |
+| Regular user | צפייה במשחקים, יצירת הזמנה, ניהול הזמנה וביטול הזמנה |
+| Admin user | התחברות לאזור ניהול וצפייה בהזמנות ובסטטיסטיקות |
+| Developer | פיתוח קוד, דחיפה ל־GitHub והפעלת תהליך CI/CD |
+| GitHub Actions runner | הרצת בדיקות, בניית image, פרסום ופריסה |
+| AWS EC2 server | שרת Linux שמריץ את Docker Compose stack |
+| Prometheus | איסוף metrics מהאפליקציה |
+| Grafana | הצגת metrics שנאספו ב־Prometheus |
 
-### 8.2 יכולות עיקריות
+### 7.2 דרישות פונקציונליות
 
-- צפייה בעמוד הבית וברשימת משחקים.
-- צפייה בפרטי משחק.
-- הזמנת מושבים לפי סוג מושב וכמות.
-- יצירת `booking_code` ייחודי.
+- הצגת רשימת משחקים.
+- הצגת פרטי משחק.
+- הצגת סוגי מושבים ומחירים.
+- יצירת הזמנה לפי שם, אימייל, סוג מושב וכמות.
+- יצירת קוד הזמנה ייחודי.
 - חיפוש הזמנה לפי קוד ואימייל.
-- ביטול הזמנה.
+- ביטול הזמנה קיימת.
 - התחברות מנהל.
 - צפייה בהזמנות ובסטטיסטיקות.
-- בדיקת בריאות דרך `/health`.
+- בדיקת זמינות המערכת דרך `/health`.
 - חשיפת metrics דרך `/metrics`.
 
-### 8.3 REST API
+### 7.3 דרישות לא פונקציונליות
 
-בבדיקת `app.py` לא נמצאו REST API endpoints אפליקטיביים בסגנון:
+- הרצה עקבית בסביבות שונות באמצעות Docker.
+- שמירת נתונים באמצעות volume של MySQL.
+- תהליך deployment אוטומטי ומבוקר.
+- בדיקת תקינות אחרי deployment.
+- יכולת rollback לגרסה קודמת במקרה כשל.
+- שמירת secrets מחוץ לקוד.
+- ניטור בסיסי של זמינות ותעבורה.
+- ניהול תשתית בצורה חוזרת באמצעות Terraform.
 
-```text
-GET /api/...
-POST /api/...
-DELETE /api/...
-```
+### 7.4 גבולות המערכת
 
-לכן לא נכון לתאר את הפרויקט כפרויקט REST API. המערכת מבוססת Flask routes רגילים שמחזירים HTML דרך Jinja templates, וכן כוללת endpoints טכניים כגון `/health` ו־`/metrics` לצורך בדיקות וניטור.
+המערכת מתמקדת באפליקציית Web ובתהליך DevOps מלא עבורה. הממשק למשתמש מבוסס דפי HTML שנוצרים בצד השרת באמצעות Flask templates. בנוסף קיימים endpoints טכניים לניטור ולבדיקות, כגון `/health` ו־`/metrics`.
 
----
-
-## 9. תכנון מערכת
-
-התכנון מחולק לשלוש שכבות:
-
-| Layer | Responsibility |
-| --- | --- |
-| Application | Flask routes, templates, business logic, sessions, bookings |
-| Runtime | Docker, Docker Compose, Nginx, Gunicorn, MySQL |
-| DevOps / Infrastructure | GitHub Actions, Docker Hub, AWS EC2, Terraform, Prometheus, Grafana |
-
-התכנון שומר על הפרדה בין קוד האפליקציה לבין תשתית ההרצה:
-
-- Flask אינו יודע שהוא רץ על EC2.
-- Docker Compose מגדיר את השירותים והקשרים ביניהם.
-- GitHub Actions מבצע deployment.
-- Terraform מייצר את התשתית.
-- Prometheus/Grafana עוסקים בניטור.
+הפרויקט מיועד להדגים סביבת production-style בסיסית וברורה: שרת יחיד, Docker Compose, מסד נתונים containerized, ניטור ותהליך CI/CD.
 
 ---
 
-## 10. ארכיטקטורת המערכת
+## 8. ארכיטקטורת המערכת
 
-### 10.1 Overall Architecture
+הארכיטקטורה בנויה כשכבות ברורות. המשתמש ניגש ל־Nginx דרך HTTP. Nginx מעביר את הבקשה אל אפליקציית Flask שרצה באמצעות Gunicorn. האפליקציה משתמשת ב־SQLAlchemy כדי לקרוא ולכתוב נתונים במסד MySQL.
+
+במקביל, תהליך ה־CI/CD פועל מחוץ לאפליקציה: GitHub Actions בונה Docker image, מפרסם אותו ל־Docker Hub, ומפעיל deployment ל־AWS EC2, שבו Docker Compose מריץ את השירותים.
+
+### Diagram 1: Overall Architecture
+
+התרשים הבא מציג את רכיבי המערכת המרכזיים ואת הקשרים ביניהם.
 
 ```mermaid
 flowchart LR
     User["User Browser"] --> Nginx["Nginx Reverse Proxy :80"]
     Nginx --> App["Flask App + Gunicorn :5000"]
-    App --> DB["MySQL :3306"]
+    App --> ORM["SQLAlchemy ORM"]
+    ORM --> DB["MySQL :3306"]
     Prometheus["Prometheus :9090"] --> Metrics["Flask /metrics"]
     Grafana["Grafana :3000"] --> Prometheus
     GitHub["GitHub Actions"] --> DockerHub["Docker Hub"]
     DockerHub --> EC2["AWS EC2 Docker Host"]
-    EC2 --> Nginx
+    EC2 --> Compose["Docker Compose"]
+    Compose --> Nginx
 ```
 
-### 10.2 Request Flow
+הזרימה המרכזית היא מהמשתמש אל Nginx ומשם לאפליקציה ולמסד הנתונים. רכיבי Prometheus ו־Grafana פועלים בצד הניטור, ואינם חלק ישיר מתהליך הזמנת הכרטיסים.
+
+### Diagram 2: Request Flow
+
+התרשים הבא מציג את מסלול הבקשה של משתמש רגיל במערכת.
 
 ```mermaid
 sequenceDiagram
@@ -219,7 +205,327 @@ sequenceDiagram
     Nginx-->>User: HTTP response
 ```
 
-### 10.3 Docker Compose Services
+המשתמש אינו פונה ישירות ל־Flask. שכבת Nginx מקבלת את הבקשה הציבורית ומעבירה אותה לשירות הפנימי.
+
+### Diagram 3: CI/CD Deployment Architecture
+
+התרשים הבא מציג את זרימת הפריסה האוטומטית.
+
+```mermaid
+flowchart LR
+    Dev["Developer Push to main"] --> Actions["GitHub Actions"]
+    Actions --> Tests["pytest"]
+    Tests --> Build["docker build"]
+    Build --> Push["docker push"]
+    Push --> Hub["Docker Hub Registry"]
+    Hub --> SSH["SSH Deploy to EC2"]
+    SSH --> Pull["docker compose pull app"]
+    Pull --> Up["docker compose up -d"]
+    Up --> Health["curl /health"]
+    Health --> Success["Deployment Success"]
+    Health --> Rollback["Rollback on Failure"]
+```
+
+ה־pipeline שומר על עקביות: אותה תמונת Docker שנבדקה ונבנתה היא התמונה שנמשכת לשרת.
+
+---
+
+## 9. מבנה תיקיות הפרויקט
+
+מבנה התיקיות המרכזי של הפרויקט:
+
+```text
+seat-booking-devops/
+|-- app.py
+|-- requirements.txt
+|-- Dockerfile
+|-- docker-compose.yml
+|-- docker-compose.prod.yml
+|-- seed_world_cup_2026.py
+|-- .env.example
+|-- README.md
+|-- db/
+|   `-- mysqld.cnf
+|-- nginx/
+|   `-- nginx.conf
+|-- monitoring/
+|   |-- health_check.sh
+|   |-- install_cron.sh
+|   |-- prometheus/
+|   |   `-- prometheus.yml
+|   `-- grafana/
+|       `-- provisioning/
+|-- static/
+|   |-- css/
+|   `-- images/
+|-- templates/
+|   |-- base.html
+|   |-- index.html
+|   |-- match_detail.html
+|   |-- booking_success.html
+|   |-- manage_booking.html
+|   |-- admin_login.html
+|   `-- admin_bookings.html
+|-- terraform/
+|   |-- main.tf
+|   |-- variables.tf
+|   |-- outputs.tf
+|   |-- user_data.sh
+|   `-- README.md
+|-- tests/
+|   `-- test_health.py
+`-- .github/
+    `-- workflows/
+        |-- ci-cd.yml
+        |-- security.yml
+        |-- terraform.yml
+        `-- terraform-destroy.yml
+```
+
+הקובץ `app.py` כולל את לוגיקת Flask, המודלים וה־routes. תיקיית `templates/` כוללת את דפי ה־HTML. תיקיית `static/` כוללת CSS ותמונות. תיקיית `nginx/` כוללת את הגדרת reverse proxy.
+
+תיקיית `monitoring/` מרכזת את קבצי הבריאות והניטור. תיקיית `terraform/` כוללת את הגדרת התשתית בענן. תיקיית `.github/workflows/` כוללת את תהליכי CI/CD, security ו־Terraform.
+
+---
+
+## 10. לוגיקת האפליקציה
+
+האפליקציה בנויה סביב routes של Flask ותבניות HTML. המשתמש עובד דרך דפדפן, והשרת מחזיר דפים מוכנים להצגה.
+
+### 10.1 דף הבית ורשימת משחקים
+
+דף הבית מציג את רשימת המשחקים לפי תאריך ומספר משחק. הנתונים נטענים ממסד הנתונים באמצעות SQLAlchemy.
+
+```python
+@app.route('/', methods=["GET"])
+def index():
+    matches = Match.query.order_by(
+        Match.match_date,
+        Match.match_number,
+    ).all()
+    from seed_world_cup_2026 import TEAM_FLAGS
+
+    return render_template("index.html", matches=matches, team_flags=TEAM_FLAGS)
+```
+
+**מיקום:** `app.py`  
+**תפקיד:** טעינת משחקים והצגת עמוד הבית.  
+**חשיבות:** זהו מסך הכניסה המרכזי למערכת.
+
+### 10.2 פרטי משחק וסוגי מושבים
+
+בעמוד פרטי משחק המשתמש יכול לראות מידע על המשחק ולבחור סוג מושב. סוגי המושבים מוגדרים בטבלת `seat_types` וכוללים מחיר וכמות זמינה.
+
+### 10.3 יצירת הזמנה
+
+יצירת הזמנה מתבצעת באמצעות route מסוג `POST`. הקוד בודק שהוזנו שם, אימייל, סוג מושב וכמות תקינה. לאחר מכן נוצרת רשומת `Booking` ונשמרת במסד הנתונים.
+
+```python
+booking = Booking(
+    customer_name=customer_name,
+    customer_email=customer_email,
+    seats_count=seats_count,
+    match=match,
+    seat_type=selected_seat_type,
+)
+db.session.add(booking)
+db.session.commit()
+```
+
+**מיקום:** `app.py`  
+**תפקיד:** שמירת הזמנה חדשה.  
+**חשיבות:** זהו התהליך העסקי המרכזי של האפליקציה.
+
+### 10.4 קוד הזמנה
+
+לכל הזמנה נוצר `booking_code` ייחודי באמצעות `uuid4`. קוד זה מאפשר למשתמש לחזור להזמנה שלו בלי צורך בחשבון משתמש מלא.
+
+### 10.5 ביטול הזמנה
+
+ביטול הזמנה אינו מוחק את הרשומה. במקום זאת, השדה `is_cancelled` משתנה ל־`True`. גישה זו שומרת היסטוריה ומאפשרת ניתוח נתונים גם אחרי ביטול.
+
+### 10.6 אזור ניהול
+
+אזור הניהול כולל login בסיסי באמצעות `ADMIN_PASSWORD`. לאחר התחברות ניתן לצפות ברשימת הזמנות ובסטטיסטיקות משחקים.
+
+### 10.7 Health ו־Metrics
+
+המערכת כוללת שני endpoints טכניים:
+
+- `/health` מחזיר סטטוס בסיסי של זמינות.
+- `/metrics` מחזיר נתונים בפורמט Prometheus.
+
+---
+
+## 11. תכנון בסיס הנתונים
+
+המערכת משתמשת ב־MySQL לשמירת נתונים בסביבת Docker ו־production. בשכבת הקוד נעשה שימוש ב־SQLAlchemy ORM, שמאפשר להגדיר טבלאות באמצעות מחלקות Python.
+
+### 11.1 ישויות מרכזיות
+
+| Entity | תיאור |
+| --- | --- |
+| `Stadium` | אצטדיון, עיר וקיבולת |
+| `Match` | משחק, שלב בטורניר, קבוצות, תאריך ואצטדיון |
+| `SeatType` | סוג מושב, מחיר, כמות ומזהה משחק |
+| `Booking` | הזמנה, פרטי לקוח, כמות מושבים וקוד הזמנה |
+
+### 11.2 קשרים בין הישויות
+
+- אצטדיון אחד יכול לארח מספר משחקים.
+- משחק אחד מתקיים באצטדיון אחד.
+- משחק אחד כולל כמה סוגי מושבים.
+- הזמנה אחת שייכת למשחק אחד ולסוג מושב אחד.
+
+### Diagram 4: Database ERD
+
+התרשים הבא מציג את הקשרים העיקריים בין טבלאות המערכת.
+
+```mermaid
+erDiagram
+    STADIUMS ||--o{ MATCHES : hosts
+    MATCHES ||--o{ SEAT_TYPES : offers
+    MATCHES ||--o{ BOOKINGS : has
+    SEAT_TYPES ||--o{ BOOKINGS : selected
+
+    STADIUMS {
+        int id
+        string name
+        string city
+        int capacity
+    }
+
+    MATCHES {
+        int id
+        int match_number
+        string stage
+        string home_team
+        string away_team
+        datetime match_date
+        int stadium_id
+    }
+
+    SEAT_TYPES {
+        int id
+        string name
+        float price
+        int total_seats
+        int match_id
+    }
+
+    BOOKINGS {
+        int id
+        string booking_code
+        string customer_name
+        string customer_email
+        int seats_count
+        bool is_cancelled
+        int match_id
+        int seat_type_id
+    }
+```
+
+הקשר בין `Booking` לבין `Match` ו־`SeatType` מאפשר לדעת לאיזה משחק שייכת ההזמנה ואיזה סוג מושב נבחר.
+
+### 11.3 דוגמת מודל SQLAlchemy
+
+```python
+class Booking(db.Model):
+    __tablename__ = "bookings"
+
+    id = db.Column(db.Integer, primary_key=True)
+    booking_code = db.Column(db.String(36), unique=True, nullable=False, default=lambda: str(uuid4()))
+    customer_name = db.Column(db.String(100), nullable=False)
+    customer_email = db.Column(db.String(120), nullable=False)
+    seats_count = db.Column(db.Integer, nullable=False)
+    is_cancelled = db.Column(db.Boolean, nullable=False, default=False)
+```
+
+**מיקום:** `app.py`  
+**תפקיד:** ייצוג טבלת ההזמנות בקוד.  
+**חשיבות:** מאפשר עבודה עם הזמנות בצורה מונחית־עצמים במקום כתיבת SQL ידני בכל פעולה.
+
+---
+
+## 12. Docker
+
+כלי Docker מאפשר לארוז אפליקציה יחד עם סביבת ההרצה שלה. במקום להסתמך על התקנות ידניות בשרת, נוצר Docker image שמכיל את הקוד, התלויות ופקודת ההפעלה.
+
+מושגים מרכזיים:
+
+- `Image` הוא תבנית מוכנה להרצה.
+- `Container` הוא מופע רץ של image.
+- `Volume` מאפשר שמירת נתונים מחוץ למחזור החיים של container.
+- `Network` מאפשר לשירותים לדבר ביניהם לפי שמות שירותים.
+
+בפרויקט זה קובץ `Dockerfile` בונה image לאפליקציית Flask:
+
+```dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+
+RUN python -m pip install --no-cache-dir pip==25.3 setuptools==80.9.0 wheel==0.46.2 \
+    && pip install --no-cache-dir -r requirements.txt \
+    && pip uninstall -y setuptools wheel
+
+COPY . .
+
+CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:5000", "app:app"]
+```
+
+**מיקום:** `Dockerfile`  
+**תפקיד:** בניית סביבת הרצה לאפליקציה.  
+**חשיבות:** GitHub Actions והשרת משתמשים באותו image, ולכן סביבת ההרצה עקבית יותר.
+
+---
+
+## 13. Docker Compose
+
+לאחר שהאפליקציה נארזה ב־Docker image, יש צורך להריץ אותה יחד עם שירותים נוספים. בפרויקט זה כלי Docker Compose משמש להרצת כמה containers יחד לפי קובץ YAML אחד.
+
+קיימים שני קבצי Compose:
+
+- `docker-compose.yml` להרצה מקומית.
+- `docker-compose.prod.yml` להרצת production-style.
+
+### 13.1 שירותים מקומיים
+
+בקובץ `docker-compose.yml` מוגדרים השירותים:
+
+- `nginx`
+- `app`
+- `mysql`
+
+הקובץ מתאים להרצה מקומית עם build מתוך קוד המקור.
+
+### 13.2 שירותי production-style
+
+בקובץ `docker-compose.prod.yml` מוגדרים השירותים:
+
+| Service | Container | תפקיד |
+| --- | --- | --- |
+| `nginx` | `nginx_proxy_prod` | נקודת כניסה HTTP |
+| `app` | `flask_app_prod` | אפליקציית Flask שרצה עם Gunicorn |
+| `mysql` | `mysql_prod` | מסד הנתונים |
+| `prometheus` | `prometheus_prod` | איסוף metrics |
+| `grafana` | `grafana_prod` | הצגת metrics |
+
+### 13.3 Volumes ו־Networks
+
+ב־Compose נוצרת רשת פנימית שמאפשרת לשירותים לפנות זה לזה לפי שם השירות, למשל `app:5000` או `mysql:3306`.
+
+ה־volumes המרכזיים הם:
+
+- `mysql-prod-data` לשמירת נתוני MySQL.
+- `prometheus_data` לשמירת נתוני Prometheus.
+- `grafana_data` לשמירת נתוני Grafana.
+
+### Diagram 5: Docker Compose Services
+
+התרשים הבא מציג את שירותי `docker-compose.prod.yml` ואת התלות ביניהם.
 
 ```mermaid
 flowchart TD
@@ -234,248 +540,13 @@ flowchart TD
     Grafana --> Prometheus
 ```
 
-### 10.4 CI/CD Pipeline
-
-```mermaid
-flowchart LR
-    Dev["Developer Push to main"] --> Actions["GitHub Actions"]
-    Actions --> Tests["pytest"]
-    Tests --> Build["docker build"]
-    Build --> Push["docker push"]
-    Push --> Hub["Docker Hub"]
-    Hub --> SSH["SSH to EC2"]
-    SSH --> Compose["docker compose pull/up"]
-    Compose --> Health["curl /health"]
-    Health --> Success["Deployment Success"]
-    Health --> Rollback["Rollback on Failure"]
-```
-
-### 10.5 Terraform Infrastructure
-
-```mermaid
-flowchart TD
-    Terraform["Terraform"] --> Backend["S3 Remote State prod/terraform.tfstate"]
-    Terraform --> EC2["aws_instance app"]
-    Terraform --> SG["aws_security_group app"]
-    Terraform --> EIP["aws_eip app or existing EIP"]
-    Terraform --> KeyPair["aws_key_pair imported if needed"]
-    EC2 --> UserData["user_data.sh"]
-    UserData --> Docker["Install Docker and Docker Compose"]
-    UserData --> Git["Install Git and clone repository"]
-```
-
-### 10.6 Monitoring Flow
-
-```mermaid
-flowchart LR
-    HealthScript["cron health_check.sh"] --> Health["http://localhost/health"]
-    Prometheus["Prometheus"] --> Metrics["app:5000/metrics"]
-    Flask["Flask App"] --> Metrics
-    Grafana["Grafana"] --> Prometheus
-    NginxLogs["Nginx Logs"] --> Operator["Operator Review"]
-    BotTraffic["Suspicious Bot Requests"] --> NginxLogs
-```
+ה־container של האפליקציה הוא מרכז המערכת. Nginx מפנה אליו בקשות משתמשים, Prometheus מושך ממנו metrics, והוא עצמו פונה ל־MySQL.
 
 ---
 
-## 11. בסיס הנתונים
+## 14. Nginx ו־Gunicorn
 
-הפרויקט משתמש ב־MySQL בסביבת Docker ו־production. עבור בדיקות אוטומטיות, הקוד משתמש ב־SQLite in-memory כאשר `TESTING=true`.
-
-החיבור ל־MySQL מוגדר ב־`app.py` באמצעות משתני סביבה:
-
-```python
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://{}:{}@{}/{}'.format(
-    os.getenv('DB_USER', 'flask'),
-    os.getenv('DB_PASSWORD', 'change-me'),
-    os.getenv('DB_HOST', 'mysql'),
-    os.getenv('DB_NAME', 'flask')
-)
-```
-
-**מיקום הקטע:** `app.py`  
-**מה הקטע עושה:** בונה connection string ל־MySQL לפי משתני סביבה.  
-**למה הוא חשוב:** מאפשר לאותה אפליקציה לרוץ מול MySQL container בלי לקודד סיסמאות בקוד.
-
-### 11.1 מודלים עיקריים
-
-| Model | Table | Purpose |
-| --- | --- | --- |
-| `Stadium` | `stadiums` | שמירת אצטדיונים, עיר וקיבולת |
-| `Match` | `matches` | שמירת משחקים, שלב, קבוצות, תאריך ואצטדיון |
-| `SeatType` | `seat_types` | סוגי מושבים, מחיר וכמות זמינה |
-| `Booking` | `bookings` | הזמנות משתמשים וקוד הזמנה |
-
-### 11.2 קשרים בין טבלאות
-
-- אצטדיון אחד יכול לארח כמה משחקים.
-- משחק אחד שייך לאצטדיון אחד.
-- משחק אחד כולל כמה סוגי מושבים.
-- הזמנה אחת שייכת למשחק אחד ולסוג מושב אחד.
-- ביטול הזמנה מתבצע באמצעות `is_cancelled=True`, ולא מחיקה פיזית של הרשומה.
-
-### 11.3 Seed Data
-
-הקובץ `seed_world_cup_2026.py` יוצר נתוני בסיס:
-
-- אצטדיונים.
-- משחקי שלב בתים ונוקאאוט.
-- מחירים לפי שלב.
-- סוגי מושבים: `Regular`, `Premium`, `VIP`.
-
-בבדיקות נמצא שה־seed יוצר 104 משחקי World Cup 2026.
-
----
-
-## 12. מבנה הקבצים והתיקיות
-
-### 12.1 Project files
-
-| Path | Purpose |
-| --- | --- |
-| `app.py` | קוד Flask, מודלים, routes, health, metrics |
-| `seed_world_cup_2026.py` | טעינת נתוני משחקים, אצטדיונים, מחירים וסוגי מושבים |
-| `requirements.txt` | חבילות Python |
-| `Dockerfile` | בניית Docker image של האפליקציה |
-| `docker-compose.yml` | הרצה מקומית: nginx, app, mysql |
-| `docker-compose.prod.yml` | הרצת production-style: nginx, app, mysql, prometheus, grafana |
-| `.env.example` | דוגמת משתני סביבה ללא secrets אמיתיים |
-| `.gitignore` | החרגת `.env`, Terraform state, מפתחות וקבצי cache |
-| `nginx/nginx.conf` | Reverse proxy מ־Nginx אל `app:5000` |
-| `db/mysqld.cnf` | קונפיגורציית MySQL בסיסית |
-| `templates/` | תבניות HTML של Flask |
-| `static/` | CSS ותמונות |
-| `tests/test_health.py` | בדיקות pytest ל־routes ולמודלים |
-| `.github/workflows/ci-cd.yml` | בדיקות, build, push ל־Docker Hub ו־deployment ל־EC2 |
-| `.github/workflows/security.yml` | בדיקות אבטחה: Gitleaks, Bandit, pip-audit, Hadolint, Trivy |
-| `.github/workflows/terraform.yml` | Terraform fmt/init/validate/plan ו־apply ידני |
-| `.github/workflows/terraform-destroy.yml` | Terraform destroy ידני |
-| `monitoring/health_check.sh` | Health check דרך cron והפעלה מחדש במקרה כשל |
-| `monitoring/install_cron.sh` | התקנת cron job |
-| `monitoring/prometheus/prometheus.yml` | הגדרת scraping של Prometheus |
-| `monitoring/grafana/provisioning/datasources/prometheus.yml` | הגדרת datasource של Grafana |
-| `terraform/main.tf` | תשתית AWS ו־S3 backend |
-| `terraform/variables.tf` | משתני Terraform |
-| `terraform/outputs.tf` | פלטים כמו IP ו־URLs |
-| `terraform/user_data.sh` | Bootstrap לשרת EC2 |
-| `terraform/README.md` | תיעוד Terraform |
-
----
-
-## 13. תיאור רכיבי המערכת
-
-### 13.1 Flask Application
-
-האפליקציה נמצאת ב־`app.py`. היא מגדירה routes, session, מודלים של SQLAlchemy, התחברות למסד נתונים, health endpoint ו־metrics endpoint.
-
-Routes שנמצאו:
-
-| Route | Methods | Purpose |
-| --- | --- | --- |
-| `/` | `GET` | עמוד בית ורשימת משחקים |
-| `/health` | `GET` | Health check טכני |
-| `/metrics` | `GET` | Prometheus metrics |
-| `/about` | `GET` | עמוד מידע |
-| `/matches/<int:match_id>` | `GET` | פרטי משחק |
-| `/matches/<int:match_id>/book` | `POST` | יצירת הזמנה |
-| `/bookings/<booking_code>` | `GET` | צפייה בהזמנה |
-| `/manage-booking` | `GET`, `POST` | חיפוש וניהול הזמנה |
-| `/bookings/<booking_code>/cancel` | `POST` | ביטול הזמנה |
-| `/admin/login` | `GET`, `POST` | התחברות מנהל |
-| `/admin/logout` | `GET` | יציאה ממנהל |
-| `/admin/bookings` | `GET` | ניהול הזמנות וסטטיסטיקות |
-
-### 13.2 Templates
-
-תיקיית `templates/` כוללת עמודים כגון:
-
-- `index.html`
-- `match_detail.html`
-- `booking_success.html`
-- `manage_booking.html`
-- `admin_login.html`
-- `admin_bookings.html`
-- `about.html`
-- `base.html`
-
-המשמעות היא שהמערכת היא Web application עם HTML server-side rendering, ולא REST API.
-
-### 13.3 Static assets
-
-תיקיית `static/` כוללת CSS ותמונות. נמצא קובץ `static/css/main.css` ותמונות הקשורות לעיצוב האתר.
-
----
-
-## 14. Docker
-
-Docker משמש לאריזת האפליקציה לסביבה קבועה. הקובץ `Dockerfile` מבוסס על `python:3.11-slim`, מתקין dependencies ומפעיל את האפליקציה עם Gunicorn.
-
-קטע חשוב:
-
-```dockerfile
-FROM python:3.11-slim
-WORKDIR /app
-COPY requirements.txt .
-RUN python -m pip install --no-cache-dir pip==25.3 setuptools==80.9.0 wheel==0.46.2 \
-    && pip install --no-cache-dir -r requirements.txt \
-    && pip uninstall -y setuptools wheel
-COPY . .
-CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:5000", "app:app"]
-```
-
-**מיקום הקטע:** `Dockerfile`  
-**מה הקטע עושה:** יוצר image של האפליקציה, מתקין חבילות ומגדיר הרצה עם Gunicorn על פורט `5000`.  
-**למה הוא חשוב:** מאפשר ל־GitHub Actions לבנות image זהה ולפרסם אותו ל־Docker Hub.
-
----
-
-## 15. Docker Compose
-
-Docker Compose אינו Kubernetes. Docker Compose הוא כלי של Docker שמריץ כמה containers יחד לפי קובץ YAML אחד. בפרויקט קיימים שני קבצי Compose:
-
-- `docker-compose.yml` לסביבה מקומית.
-- `docker-compose.prod.yml` לסביבת production-style.
-
-### 15.1 Docker containers/services
-
-| File | Service | Container | Image | Purpose |
-| --- | --- | --- | --- | --- |
-| `docker-compose.yml` | `nginx` | `nginx_proxy` | `nginx:alpine` | Reverse proxy מקומי |
-| `docker-compose.yml` | `app` | `flask_app` | `flask_app:latest` | Flask/Gunicorn מקומי |
-| `docker-compose.yml` | `mysql` | `mysql` | `mysql:8.0` | מסד נתונים מקומי |
-| `docker-compose.prod.yml` | `nginx` | `nginx_proxy_prod` | `nginx:alpine` | Reverse proxy production |
-| `docker-compose.prod.yml` | `app` | `flask_app_prod` | `shlomodevops/devops-final-projectshlomo:${IMAGE_TAG:-latest}` | אפליקציה מ־Docker Hub |
-| `docker-compose.prod.yml` | `mysql` | `mysql_prod` | `mysql:8.0` | מסד נתונים production |
-| `docker-compose.prod.yml` | `prometheus` | `prometheus_prod` | `prom/prometheus:latest` | איסוף metrics |
-| `docker-compose.prod.yml` | `grafana` | `grafana_prod` | `grafana/grafana:latest` | הצגת dashboards |
-
-### 15.2 Ports
-
-| Component | Host Port | Container Port | Source |
-| --- | --- | --- | --- |
-| Nginx | `80` | `80` | `docker-compose.yml`, `docker-compose.prod.yml` |
-| Flask app | `5001` | `5000` | `docker-compose.yml`, `docker-compose.prod.yml` |
-| MySQL | `3307` | `3306` | `docker-compose.yml`, `docker-compose.prod.yml` |
-| Prometheus | `9090` | `9090` | `docker-compose.prod.yml` |
-| Grafana | `3000` | `3000` | `docker-compose.prod.yml` |
-| SSH | `22` | EC2 host | `terraform/main.tf` Security Group |
-
-### 15.3 Volumes
-
-| Volume | Purpose |
-| --- | --- |
-| `mysql-data` | שמירת נתוני MySQL בסביבה מקומית |
-| `mysql-prod-data` | שמירת נתוני MySQL בסביבת production-style |
-| `prometheus_data` | שמירת נתוני Prometheus |
-| `grafana_data` | שמירת נתוני Grafana |
-
----
-
-## 16. Nginx
-
-Nginx משמש כ־Reverse Proxy. הוא מקבל בקשות HTTP בפורט `80` ומעביר אותן ל־Flask app דרך כתובת השירות הפנימית `app:5000`.
-
-קטע חשוב:
+שכבת Nginx משמשת כשער הכניסה למערכת. המשתמש פונה לשרת בפורט `80`, ו־Nginx מעביר את הבקשה לאפליקציה הפנימית.
 
 ```nginx
 location / {
@@ -487,260 +558,232 @@ location / {
 }
 ```
 
-**מיקום הקטע:** `nginx/nginx.conf`  
-**מה הקטע עושה:** מעביר כל בקשה ל־Flask container.  
-**למה הוא חשוב:** המשתמש פונה ל־Nginx בפורט `80`, והאפליקציה עצמה נשארת מאחורי proxy.
+**מיקום:** `nginx/nginx.conf`  
+**תפקיד:** העברת בקשות מ־Nginx אל שירות `app`.  
+**חשיבות:** מאפשר להפריד בין נקודת הכניסה הציבורית לבין שירות האפליקציה הפנימי.
 
-לא נמצא בקבצי הפרויקט שימוש ב־HTTPS, certificate, domain או Load Balancer.
-
----
-
-## 17. Flask / Gunicorn
-
-Flask אחראי על הלוגיקה של האפליקציה: routes, forms, sessions, הזמנות, ניהול, health ו־metrics. Gunicorn הוא שרת WSGI שמריץ את Flask בתוך container.
-
-פקודת ההרצה ב־Dockerfile:
+שרת Gunicorn מריץ את Flask בתוך container:
 
 ```dockerfile
 CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:5000", "app:app"]
 ```
 
-**מיקום הקטע:** `Dockerfile`  
-**מה הקטע עושה:** מפעיל שני workers של Gunicorn ומאזין על `0.0.0.0:5000`.  
-**למה הוא חשוב:** בסביבת Docker לא מריצים את Flask development server, אלא שרת WSGI מתאים יותר.
-
-ב־`app.py` יש גם `if __name__ == "__main__"` להרצה ישירה, אך ב־Docker ההרצה בפועל היא דרך Gunicorn.
+שילוב זה נפוץ בסביבות production-style: Nginx מטפל בכניסה החיצונית, ו־Gunicorn מפעיל את אפליקציית Python.
 
 ---
 
-## 18. MySQL / SQLAlchemy
+## 15. GitHub Actions CI/CD
 
-MySQL קיים בפועל בקבצי Compose ומשמש כמסד נתונים. SQLAlchemy קיים בפועל ב־`app.py` וב־`requirements.txt`.
+תהליך ה־CI/CD מוגדר בקובץ `.github/workflows/ci-cd.yml`. כאשר מתבצע push ל־`main`, ה־workflow מריץ בדיקות, בונה Docker image, מפרסם אותו ל־Docker Hub ומבצע deployment ל־EC2.
 
-### 18.1 SQLAlchemy models
-
-קטע לדוגמה:
-
-```python
-class Booking(db.Model):
-    __tablename__ = "bookings"
-
-    id = db.Column(db.Integer, primary_key=True)
-    booking_code = db.Column(db.String(36), unique=True, nullable=False, default=lambda: str(uuid4()))
-    customer_name = db.Column(db.String(100), nullable=False)
-    customer_email = db.Column(db.String(120), nullable=False)
-    seats_count = db.Column(db.Integer, nullable=False)
-    is_cancelled = db.Column(db.Boolean, nullable=False, default=False)
-```
-
-**מיקום הקטע:** `app.py`  
-**מה הקטע עושה:** מגדיר את טבלת ההזמנות.  
-**למה הוא חשוב:** ההזמנה היא הפעולה המרכזית במערכת.
-
-### 18.2 SQLite בבדיקות
-
-כאשר `TESTING=true`, האפליקציה משתמשת ב־SQLite in-memory:
-
-```python
-if app.config["TESTING"]:
-    app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///:memory:"
-```
-
-זה מאפשר בדיקות מהירות ללא תלות ב־MySQL אמיתי.
-
----
-
-## 19. Git ו־GitHub
-
-Git משמש לניהול גרסאות. GitHub משמש לאחסון הריפוזיטורי ולהפעלת GitHub Actions. ב־`user_data.sh` השרת משכפל את הריפוזיטורי אל:
+סדר הפעולות המרכזי:
 
 ```text
-/home/ubuntu/seat-booking-devops
+Push -> Tests -> Docker Build -> Docker Push -> SSH Deploy -> Docker Compose Pull/Up -> Health Check -> Rollback
 ```
 
-קטע חשוב:
+### Diagram 6: CI/CD Pipeline
 
-```bash
-if [ -d "${APP_DIR}/.git" ]; then
-  git -C "${APP_DIR}" pull --ff-only
-elif [ -d "${APP_DIR}" ]; then
-  echo "${APP_DIR} exists but is not a Git repository; skipping clone"
-else
-  git clone "${REPO_URL}" "${APP_DIR}"
-fi
+התרשים הבא מציג את שלבי ה־pipeline מהקוד ועד השרת.
+
+```mermaid
+flowchart LR
+    Push["Push to main"] --> Checkout["Checkout code"]
+    Checkout --> Python["Set up Python 3.11"]
+    Python --> Pytest["Run pytest"]
+    Pytest --> Build["Build Docker image"]
+    Build --> Login["Docker Hub Login"]
+    Login --> Tags["Tag latest and short SHA"]
+    Tags --> PushImage["Push image"]
+    PushImage --> SSH["SSH to EC2"]
+    SSH --> Pull["docker compose pull app"]
+    Pull --> Up["docker compose up -d"]
+    Up --> Health["Health Check /health"]
+    Health --> Done["Success"]
+    Health --> Rollback["Rollback"]
 ```
 
-**מיקום הקטע:** `terraform/user_data.sh`  
-**מה הקטע עושה:** מעדכן clone קיים או משכפל את הריפוזיטורי אם אינו קיים.  
-**למה הוא חשוב:** מכין את שרת EC2 להרצת Docker Compose מתוך קבצי הפרויקט.
+ה־pipeline בודק את הקוד לפני הפריסה ומוודא שהגרסה החדשה מגיבה אחרי שעלתה בשרת. במקרה של כשל, מופעל תהליך rollback שמחזיר את ה־image tag הקודם.
+
+### 15.1 תפקיד image tags
+
+ל־Docker image ניתנים שני tags:
+
+- `latest` מייצג את הגרסה האחרונה.
+- short commit SHA מייצג גרסה ספציפית לפי commit.
+
+השימוש ב־short SHA חשוב במיוחד ל־rollback, כי הוא מאפשר לחזור לגרסה מוגדרת ולא רק לתג כללי שמשתנה עם הזמן.
 
 ---
 
-## 20. GitHub Actions
+## 16. Docker Hub
 
-בפרויקט נמצאו ארבעה workflows:
-
-| Workflow | Purpose |
-| --- | --- |
-| `.github/workflows/ci-cd.yml` | בדיקות, build, push ל־Docker Hub ו־deployment ל־EC2 |
-| `.github/workflows/security.yml` | בדיקות אבטחה וכלי סריקה |
-| `.github/workflows/terraform.yml` | בדיקות Terraform ו־apply ידני |
-| `.github/workflows/terraform-destroy.yml` | destroy ידני של Terraform |
-
-### 20.1 CI/CD Application Workflow
-
-ה־workflow `ci-cd.yml` רץ על push ל־`main`, למעט שינויים במסמכים וב־Terraform. הוא מבצע:
-
-1. `actions/checkout`.
-2. התקנת Python `3.11`.
-3. התקנת `requirements.txt`.
-4. הרצת `pytest`.
-5. בניית Docker image.
-6. Login ל־Docker Hub.
-7. תיוג image כ־`latest` וכ־short SHA.
-8. Push ל־Docker Hub.
-9. SSH ל־EC2.
-10. עדכון `.env` בשרת עם `IMAGE_TAG`.
-11. `docker compose pull app`.
-12. `docker compose up -d`.
-13. בדיקת `/health`.
-14. Rollback אם health check נכשל.
-
-### 20.2 Security Workflow
-
-הקובץ `security.yml` כולל כלים שנמצאו בפועל:
-
-- `Gitleaks` לסריקת secrets.
-- `Bandit` לסריקת קוד Python.
-- `pip-audit` לסריקת dependencies.
-- `Hadolint` לסריקת Dockerfile.
-- `Trivy` לסריקת Docker image.
-
-מכיוון שכלים אלו קיימים בקובץ, ניתן לתאר אותם כחלק מהפרויקט. אין להוסיף כלי DevSecOps אחרים שלא נמצאו.
-
-### 20.3 Terraform Workflow
-
-הקובץ `terraform.yml` מבצע:
-
-- `terraform fmt -check`
-- `terraform init`
-- `terraform validate`
-- `terraform plan`
-- `terraform apply` רק בהרצה ידנית עם input מתאים
-
-### 20.4 Terraform Destroy Workflow
-
-נמצא קובץ `.github/workflows/terraform-destroy.yml` שמריץ `terraform destroy -auto-approve` בהרצה ידנית בלבד. בגלל שמדובר בפעולה מסוכנת, יש להפעיל אותה בזהירות ורק כאשר ברור שרוצים למחוק תשתית שמנוהלת על ידי Terraform.
-
----
-
-## 21. Docker Hub / Registry
-
-Docker Hub קיים בפועל בפרויקט. ה־image נדחף אל:
+Docker Hub משמש כ־image registry של הפרויקט. לאחר שה־CI/CD בונה את ה־Docker image, הוא מפרסם אותו ל־Docker Hub תחת:
 
 ```text
 shlomodevops/devops-final-projectshlomo
 ```
 
-ה־CI/CD יוצר שני tags:
-
-| Tag | Purpose |
-| --- | --- |
-| `latest` | תג נוח לגרסה האחרונה |
-| short SHA | תג לפי commit, נוח לאימות ול־rollback |
-
-קטע חשוב:
+בשרת EC2 אין צורך לבנות את האפליקציה מחדש. במקום זאת, Docker Compose מושך את ה־image שפורסם:
 
 ```bash
-docker tag seat-booking-app:ci shlomodevops/devops-final-projectshlomo:latest
-docker tag seat-booking-app:ci shlomodevops/devops-final-projectshlomo:${SHORT_SHA}
-docker push shlomodevops/devops-final-projectshlomo:latest
-docker push shlomodevops/devops-final-projectshlomo:${SHORT_SHA}
+docker compose --env-file .env -f docker-compose.prod.yml pull app
+docker compose --env-file .env -f docker-compose.prod.yml up -d
 ```
 
-**מיקום הקטע:** `.github/workflows/ci-cd.yml`  
-**מה הקטע עושה:** מתייג ודוחף image ל־Docker Hub.  
-**למה הוא חשוב:** שרת EC2 מושך את ה־image שפורסם במקום לבנות אותו בשרת.
+גישה זו מפרידה בין build לבין deployment. ה־build מתבצע ב־GitHub Actions, והשרת אחראי להריץ את הגרסה שנבחרה.
 
 ---
 
-## 22. AWS EC2
+## 17. AWS EC2 ו־Security Groups
 
-AWS EC2 הוא שרת ה־Linux שעליו רצה סביבת Docker Compose. לפי `terraform/main.tf`, Terraform יוצר `aws_instance` עם Ubuntu AMI, סוג מכונה `t3.micro` כברירת מחדל, דיסק root בגודל `20GB`, Security Group ו־user data.
+שרת AWS EC2 הוא שרת Linux שעליו רצה סביבת Docker Compose. השרת מחזיק את קבצי הפרויקט, קובץ `.env` מקומי, Docker Engine, ואת כל שירותי ה־production-style.
 
-תפקיד EC2 בפרויקט:
+קבוצת Security Group משמשת כ־firewall ברמת AWS. היא קובעת אילו פורטים פתוחים ומאילו כתובות ניתן להתחבר.
 
-- להריץ Docker Engine.
-- להריץ את production Compose stack.
-- לשמור `.env` מקומי עם secrets.
-- לקבל deployment מ־GitHub Actions דרך SSH.
-- לחשוף את Nginx בפורט `80`.
-- לחשוף Grafana ו־Prometheus לפי הגדרות Security Group.
+### 17.1 פורטים מרכזיים
 
-לא נמצא שימוש ב־AWS RDS. MySQL רץ כ־container בתוך Docker Compose.
-
----
-
-## 23. Security Groups
-
-Security Group מוגדר ב־`terraform/main.tf` ושולט בתעבורה נכנסת ויוצאת לשרת EC2.
-
-### 23.1 Inbound rules
-
-| Port | Purpose | Source |
-| --- | --- | --- |
-| `22` | SSH | `var.allowed_ssh_cidr` |
-| `80` | HTTP to Nginx | `0.0.0.0/0` |
-| `3000` | Grafana | `var.allowed_grafana_cidr` |
-| `9090` | Prometheus | `var.allowed_prometheus_cidr`, רק אם אינו ריק |
-
-### 23.2 Outbound rules
-
-ה־Security Group מאפשר outbound מלא:
-
-```hcl
-egress {
-  from_port   = 0
-  to_port     = 0
-  protocol    = "-1"
-  cidr_blocks = ["0.0.0.0/0"]
-}
-```
-
-**מיקום הקטע:** `terraform/main.tf`  
-**מה הקטע עושה:** מאפשר לשרת לצאת לאינטרנט, למשל כדי למשוך packages או Docker images.  
-**למה הוא חשוב:** בלי outbound השרת לא יוכל להתקין Docker או למשוך images.
-
----
-
-## 24. Terraform
-
-Terraform קיים בפועל בתיקיית `terraform/`:
-
-- `main.tf`
-- `variables.tf`
-- `outputs.tf`
-- `user_data.sh`
-- `README.md`
-
-### 24.1 מה Terraform יוצר
-
-לפי `terraform/main.tf`, Terraform מנהל:
-
-| Resource | Purpose |
+| Port | שימוש |
 | --- | --- |
-| `aws_instance.app` | שרת EC2 להרצת Docker Compose |
-| `aws_security_group.app` | חוקי רשת ל־SSH, HTTP, Grafana, Prometheus ו־egress |
-| `aws_eip.app` | Elastic IP חדש אם לא סופק existing allocation |
-| `aws_eip_association.app` | חיבור Elastic IP ל־EC2 |
-| `aws_key_pair.imported` | יצירת Key Pair אם לא סופק existing key pair |
-| `data.aws_vpc.default` | שימוש ב־default VPC |
-| `data.aws_subnets.default` | שימוש ב־default subnets |
-| `data.aws_ami.ubuntu` | בחירת Ubuntu AMI |
+| `22` | SSH לניהול השרת ול־deployment |
+| `80` | HTTP דרך Nginx |
+| `3000` | Grafana |
+| `9090` | Prometheus |
 
-### 24.2 S3 Remote Backend
+גישה ל־SSH צריכה להיות מוגבלת ל־CIDR אישי. גם גישה ל־Grafana ול־Prometheus צריכה להיות מוגבלת, מכיוון שמדובר בכלי תפעוליים שמציגים מידע על המערכת.
 
-ב־`terraform/main.tf` מוגדר S3 backend:
+---
+
+## 18. Monitoring
+
+שכבת הניטור בפרויקט נועדה לענות על שתי שאלות: האם האפליקציה זמינה, ומה קורה בה מבחינת בקשות ו־metrics.
+
+### 18.1 Health endpoint
+
+ה־endpoint `/health` מחזיר תשובה פשוטה כאשר האפליקציה מגיבה:
+
+```python
+@app.route('/health', methods=["GET"])
+def health():
+    return {"status": "ok"}, 200
+```
+
+בדיקה זו משמשת את ה־CI/CD אחרי deployment ואת סקריפט הבריאות שרץ בשרת.
+
+### 18.2 Health check script ו־cron
+
+הקובץ `monitoring/health_check.sh` מבצע בדיקה לכתובת:
+
+```bash
+http://localhost/health
+```
+
+אם הבדיקה נכשלת כמה פעמים, הסקריפט מתעד מידע לוגים, מציג מצב containers ומנסה להפעיל מחדש את `flask_app_prod`. הקובץ `monitoring/install_cron.sh` מתקין cron job שמריץ את הבדיקה כל חמש דקות.
+
+### 18.3 Metrics endpoint
+
+ה־endpoint `/metrics` מחזיר metrics בפורמט ש־Prometheus יודע לקרוא:
+
+```python
+@app.route('/metrics', methods=["GET"])
+def metrics():
+    return generate_latest(), 200, {"Content-Type": CONTENT_TYPE_LATEST}
+```
+
+בנוסף מוגדר counter בשם `flask_http_requests_total`, שמודד בקשות לפי method, endpoint ו־status.
+
+### 18.4 Prometheus
+
+Prometheus מושך נתונים מהאפליקציה כל 15 שניות לפי ההגדרה:
+
+```yaml
+scrape_configs:
+  - job_name: flask_app
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - app:5000
+```
+
+### 18.5 Grafana
+
+Grafana מחובר ל־Prometheus כ־datasource ומאפשר להציג את הנתונים בצורה גרפית. בפרויקט קיימת הגדרת provisioning שמגדירה את Prometheus כ־datasource ברירת מחדל.
+
+### Diagram 7: Monitoring Flow
+
+התרשים הבא מציג את זרימת הניטור במערכת.
+
+```mermaid
+flowchart LR
+    Cron["cron health_check.sh"] --> Health["http://localhost/health"]
+    Prometheus["Prometheus"] --> Metrics["app:5000/metrics"]
+    Flask["Flask App"] --> Metrics
+    Grafana["Grafana"] --> Prometheus
+    Internet["Internet Traffic"] --> Nginx["Nginx Logs"]
+    Nginx --> Operator["Operational Review"]
+```
+
+במערכת ניתן לראות גם בקשות חיצוניות חשודות שמגיעות מהאינטרנט. בקשות כאלה מופיעות בלוגים של Nginx ובמדדים, ולכן חשוב לדעת להבחין בין תעבורה אמיתית לבין סריקות אוטומטיות.
+
+---
+
+## 19. DevSecOps
+
+DevSecOps מוסיף שכבת אבטחה לתהליך DevOps. במקום לבצע בדיקות אבטחה רק בסוף הפרויקט, הבדיקות משולבות בתוך תהליך העבודה האוטומטי.
+
+בפרויקט זה קיים workflow בשם `.github/workflows/security.yml`, שמריץ כמה כלים:
+
+| Tool | תפקיד |
+| --- | --- |
+| `Gitleaks` | בדיקה שלא הוכנסו secrets לריפוזיטורי |
+| `Bandit` | בדיקת בעיות אבטחה נפוצות בקוד Python |
+| `pip-audit` | בדיקת vulnerabilities בחבילות Python |
+| `Hadolint` | בדיקת איכות ואבטחה של Dockerfile |
+| `Trivy` | סריקת vulnerabilities בתוך Docker image |
+
+בדיקות אלה מחזקות את ה־CI/CD. הן אינן מחליפות תכנון אבטחה מלא, אך הן מוסיפות שכבת בדיקה אוטומטית שמקטינה סיכון להעלאת קוד או image עם בעיות ידועות.
+
+---
+
+## 20. Terraform
+
+Terraform משמש בפרויקט ככלי Infrastructure as Code. במקום ליצור משאבי AWS בצורה ידנית בלבד, התשתית מוגדרת בקבצי `.tf` שניתן להריץ, לבדוק ולעדכן בצורה עקבית.
+
+בפרויקט זה Terraform אחראי לשכבת התשתית, GitHub Actions אחראי לפריסת האפליקציה, ו־Docker אחראי להרצת השירותים.
+
+### 20.1 קבצי Terraform
+
+| File | תפקיד |
+| --- | --- |
+| `terraform/main.tf` | הגדרת provider, backend ומשאבי AWS |
+| `terraform/variables.tf` | משתנים כמו region, instance type ו־CIDR |
+| `terraform/outputs.tf` | פלטים כמו public IP, app URL ו־SSH command |
+| `terraform/user_data.sh` | התקנת Docker/Git והכנת השרת |
+| `.github/workflows/terraform.yml` | בדיקת Terraform והרצת plan/apply ידני |
+
+### 20.2 משאבי AWS
+
+Terraform יוצר או מנהל את הרכיבים הבאים:
+
+- EC2 instance להרצת Docker Compose.
+- Security Group להגדרת גישה לרשת.
+- Elastic IP לכתובת ציבורית יציבה.
+- Key Pair במקרה שלא סופק key pair קיים.
+- שימוש ב־default VPC ו־default subnets.
+
+### 20.3 תפקיד `user_data.sh`
+
+הקובץ `terraform/user_data.sh` רץ בעת יצירת השרת ומכין אותו לעבודה:
+
+- מתקין Docker ו־Docker Compose plugin.
+- מתקין Git.
+- מפעיל את שירות Docker.
+- משכפל או מעדכן את הריפוזיטורי.
+- מוודא שהמשתמש `ubuntu` יכול לעבוד עם Docker.
+
+### 20.4 S3 Remote State
+
+קובץ state של Terraform שומר את הקשר בין הגדרות Terraform לבין משאבי AWS שנוצרו בפועל. בפרויקט זה ה־state נשמר ב־S3:
 
 ```hcl
 backend "s3" {
@@ -751,193 +794,46 @@ backend "s3" {
 }
 ```
 
-**מיקום הקטע:** `terraform/main.tf`  
-**מה הקטע עושה:** שומר את Terraform state ב־S3 תחת `prod/terraform.tfstate`.  
-**למה הוא חשוב:** GitHub Actions runners הם זמניים, ולכן אסור להסתמך על state מקומי. state מרוחק מאפשר ל־Terraform לדעת אילו משאבים כבר קיימים.
+שמירת state ב־S3 חשובה במיוחד עבור GitHub Actions, משום שה־runners זמניים ואינם שומרים קבצים בין הרצות. remote state מאפשר ל־Terraform לזכור אילו משאבים כבר קיימים, לעדכן משאבים קיימים באמצעות `terraform apply`, ולהוסיף תהליכי destroy בצורה בטוחה יותר כאשר state קבוע קיים.
 
-`use_lockfile = true` מונע מצב שבו שתי הרצות Terraform משנות את אותו state במקביל.
+### Diagram 8: Terraform Infrastructure
 
-### 24.3 מה Terraform לא עושה
+התרשים הבא מציג את תפקיד Terraform בפרויקט.
 
-Terraform לא מחליף את GitHub Actions. לפי הקבצים בפועל, Terraform:
+```mermaid
+flowchart TD
+    Terraform["Terraform"] --> Backend["S3 Remote State prod/terraform.tfstate"]
+    Terraform --> EC2["AWS EC2 Instance"]
+    Terraform --> SG["Security Group"]
+    Terraform --> EIP["Elastic IP"]
+    Terraform --> KeyPair["EC2 Key Pair"]
+    EC2 --> UserData["user_data.sh"]
+    UserData --> Docker["Install Docker"]
+    UserData --> Git["Clone Repository"]
+    GitHubActions["GitHub Actions"] --> Deploy["Application Deployment"]
+    Deploy --> EC2
+```
 
-- לא בונה Docker image.
-- לא דוחף image ל־Docker Hub.
-- לא מריץ deployment של האפליקציה.
-- לא יוצר `.env` עם secrets.
-- לא מריץ Docker Compose כחלק מה־`main.tf`.
-- לא יוצר RDS.
-- לא מגדיר HTTPS או domain.
-
-### 24.4 מה עושה `user_data.sh`
-
-`terraform/user_data.sh` רץ בזמן יצירת ה־EC2 ומבצע:
-
-- `apt-get update`
-- התקנת `ca-certificates`, `curl`, `gnupg`, `git`
-- הוספת Docker repository
-- התקנת Docker Engine ו־Docker Compose plugin
-- הפעלת Docker service
-- הוספת המשתמש `ubuntu` לקבוצת `docker`
-- clone או pull של הריפוזיטורי
-- הדפסת גרסאות Docker, Docker Compose ו־Git
-
-### 24.5 ההבדל בין Terraform לבין GitHub Actions
-
-| Tool | Responsibility |
-| --- | --- |
-| Terraform | יצירת תשתית AWS: EC2, Security Group, Elastic IP, Key Pair, bootstrap |
-| GitHub Actions | בדיקות, build, push ל־Docker Hub, deployment ל־EC2, health check, rollback |
-
-הפרדה זו חשובה: Terraform יוצר את המקום שבו האפליקציה תרוץ, ו־GitHub Actions מעדכן את האפליקציה שרצה שם.
+התרשים מדגיש את חלוקת האחריות: Terraform מכין ומנהל את התשתית, ולאחר מכן GitHub Actions משתמש בתשתית כדי לפרוס את האפליקציה.
 
 ---
 
-## 25. Prometheus
+## 21. Testing
 
-Prometheus קיים בפועל ב־`docker-compose.prod.yml` וב־`monitoring/prometheus/prometheus.yml`.
+בדיקות אוטומטיות נכתבו באמצעות pytest ונמצאות בקובץ `tests/test_health.py`. בזמן בדיקות, האפליקציה משתמשת במסד SQLite בזיכרון כדי להריץ בדיקות מהר וללא תלות ב־MySQL חיצוני.
 
-הגדרת scraping:
+תחומי הבדיקה המרכזיים:
 
-```yaml
-global:
-  scrape_interval: 15s
+- בדיקת `/health`.
+- בדיקת עמוד הבית.
+- בדיקת עמוד פרטי משחק.
+- בדיקת ניהול הזמנה.
+- בדיקת יצירת וביטול הזמנה.
+- בדיקת התחברות ויציאה של admin.
+- בדיקת נתוני seed של World Cup 2026.
+- בדיקת מחירים לפי שלבי הטורניר.
 
-scrape_configs:
-  - job_name: flask_app
-    metrics_path: /metrics
-    static_configs:
-      - targets:
-          - app:5000
-```
-
-**מיקום הקטע:** `monitoring/prometheus/prometheus.yml`  
-**מה הקטע עושה:** Prometheus מושך נתונים כל 15 שניות מ־`app:5000/metrics`.  
-**למה הוא חשוב:** כך נאספים metrics מהאפליקציה ללא צורך שהאפליקציה תדחוף נתונים החוצה.
-
----
-
-## 26. Grafana
-
-Grafana קיים בפועל ב־`docker-compose.prod.yml`. בנוסף קיים provisioning ל־datasource:
-
-```yaml
-datasources:
-  - name: Prometheus
-    type: prometheus
-    access: proxy
-    url: http://prometheus:9090
-    isDefault: true
-    editable: true
-```
-
-**מיקום הקטע:** `monitoring/grafana/provisioning/datasources/prometheus.yml`  
-**מה הקטע עושה:** מגדיר ל־Grafana להשתמש ב־Prometheus כ־datasource.  
-**למה הוא חשוב:** אחרי שה־Compose stack עולה, Grafana יודע מאיפה לקרוא metrics.
-
-לא נמצאו בקבצי הפרויקט dashboard JSON מוגדרים מראש. לכן ניתן לומר ש־Grafana זמין להצגת נתונים מ־Prometheus, אך לא נמצא dashboard מותאם אישית בקבצים.
-
----
-
-## 27. Health Check ו־Monitoring
-
-### 27.1 מה זה `/health`
-
-`/health` הוא endpoint טכני שבודק אם האפליקציה מגיבה. הקוד:
-
-```python
-@app.route('/health', methods=["GET"])
-def health():
-    return {"status": "ok"}, 200
-```
-
-**מיקום הקטע:** `app.py`  
-**מה הקטע עושה:** מחזיר JSON פשוט עם status `ok`.  
-**למה הוא חשוב:** GitHub Actions וסקריפט health check יכולים לבדוק אם deployment הצליח.
-
-### 27.2 מה זה `/metrics`
-
-`/metrics` מחזיר metrics בפורמט ש־Prometheus יודע לקרוא:
-
-```python
-@app.route('/metrics', methods=["GET"])
-def metrics():
-    return generate_latest(), 200, {"Content-Type": CONTENT_TYPE_LATEST}
-```
-
-**מיקום הקטע:** `app.py`  
-**מה הקטע עושה:** מחזיר metrics של `prometheus-client`.  
-**למה הוא חשוב:** Prometheus מושך את הנתונים ומאפשר לראות התנהגות לאורך זמן.
-
-### 27.3 Counter של בקשות
-
-```python
-HTTP_REQUESTS_TOTAL = Counter(
-    "flask_http_requests_total",
-    "Total HTTP requests handled by the Flask app",
-    ["method", "endpoint", "status"],
-)
-```
-
-**מיקום הקטע:** `app.py`  
-**מה הקטע עושה:** מגדיר counter לפי method, endpoint ו־status.  
-**למה הוא חשוב:** מאפשר לראות כמה בקשות התקבלו ולאיזה endpoints.
-
-### 27.4 Cron Health Check
-
-הקובץ `monitoring/health_check.sh` בודק:
-
-```bash
-HEALTH_URL="http://localhost/health"
-APP_CONTAINER="flask_app_prod"
-```
-
-אם הבדיקה נכשלת שלוש פעמים, הסקריפט:
-
-- כותב לוג.
-- מצרף `docker ps`.
-- מצרף 40 שורות אחרונות מ־`flask_app_prod`.
-- מנסה לבצע restart ל־container.
-
-### 27.5 Monitoring endpoints
-
-| Endpoint | Purpose | Consumer |
-| --- | --- | --- |
-| `/health` | בדיקת זמינות בסיסית | GitHub Actions, cron health script |
-| `/metrics` | חשיפת metrics | Prometheus |
-| `http://SERVER_IP:9090` | ממשק Prometheus | משתמש/מפעיל |
-| `http://SERVER_IP:3000` | ממשק Grafana | משתמש/מפעיל |
-
-### 27.6 תצפית על בוטים ובקשות חשודות
-
-במהלך הרצת פרויקט כזה על שרת ציבורי, ניתן לראות ב־Nginx logs וב־Grafana בקשות חשודות מבוטים באינטרנט. תופעה זו נפוצה כאשר פורט `80` פתוח לציבור. בפרויקט זה Nginx חשוף ב־`0.0.0.0/0` לפי Security Group, ולכן בקשות מסוג זה יכולות להגיע לשרת.
-
-המשמעות המקצועית:
-
-- לא כל בקשה ב־Grafana היא משתמש אמיתי.
-- logs עוזרים לזהות סריקות אוטומטיות.
-- יש להגביל פורטים רגישים כמו `9090` ו־`3000`.
-- בסביבה אמיתית כדאי להוסיף HTTPS, authentication, WAF או הגבלות רשת, אך רכיבים אלו לא נמצאו בקבצי הפרויקט ולכן אינם מוצגים כחלק מהמערכת הקיימת.
-
----
-
-## 28. בדיקות
-
-בדיקות קיימות בפועל בקובץ `tests/test_health.py`. הן משתמשות ב־pytest וב־Flask test client.
-
-### 28.1 מה נבדק
-
-| Test Area | Examples |
-| --- | --- |
-| Health | `/health` מחזיר `{"status": "ok"}` |
-| Pages | `/`, `/about`, `/matches/<id>`, `/manage-booking` |
-| Booking | צפייה בהזמנה וביטול הזמנה |
-| Admin | login, logout, redirect ללא login |
-| Data model | שדות World Cup schedule |
-| Seed data | יצירת 104 משחקים ללא כפילויות |
-| Pricing | מחירים לפי שלב בטורניר |
-
-### 28.2 קטע בדיקה חשוב
+דוגמה לבדיקה:
 
 ```python
 def test_health_route(client):
@@ -947,192 +843,203 @@ def test_health_route(client):
     assert response.get_json() == {"status": "ok"}
 ```
 
-**מיקום הקטע:** `tests/test_health.py`  
-**מה הקטע עושה:** בודק שה־health endpoint תקין.  
-**למה הוא חשוב:** אותו endpoint משמש גם את ה־CI/CD אחרי deployment.
-
-### 28.3 הרצת בדיקות
-
-```bash
-pytest
-```
-
-לא נמצאו בקבצי הפרויקט בדיקות end-to-end עם browser אמיתי או בדיקות עומס.
+בדיקה זו חשובה משום שאותו endpoint משמש גם בתהליך deployment כדי לוודא שהאפליקציה עלתה בהצלחה.
 
 ---
 
-## 29. בעיות שהתגלו במהלך הפיתוח ופתרונות
+## 22. בעיות ופתרונות במהלך הפיתוח
 
-חלק זה מתאר בעיות שמזוהות מתוך מבנה הקבצים והפתרונות שהוטמעו בפרויקט.
+### 22.1 SSH access ו־Security Group CIDR
 
-### 29.1 הפרדה בין development לבין production
+בעת עבודה עם EC2 יש צורך לאפשר SSH לשרת, אך פתיחת SSH לכל העולם היא סיכון אבטחתי. הפתרון בפרויקט הוא שימוש במשתנה `allowed_ssh_cidr`, שמאפשר להגביל את פורט `22` לכתובת או טווח כתובות מוגדרים.
 
-בעיה: בסביבה מקומית אפשר להשתמש בערכי ברירת מחדל, אבל production לא צריך לרוץ עם secrets חלשים.  
-פתרון: `app.py` בודק `APP_ENV=production` ודורש `SECRET_KEY` ו־`ADMIN_PASSWORD` שאינם ערכי development.
+### 22.2 Elastic IP וזיהוי כתובת קיימת
 
-### 29.2 שמירת מידע בין הרצות
+בסביבת ענן חשוב לשמור כתובת ציבורית יציבה. בפרויקט נוספה אפשרות להשתמש ב־Elastic IP קיים באמצעות `existing_eip_allocation_id`, או ליצור Elastic IP חדש כאשר הערך ריק. כך ניתן לשלוט בהעברת תעבורה לשרת חדש בצורה מסודרת.
 
-בעיה: container יכול להימחק ולהיווצר מחדש.  
-פתרון: Docker volumes כמו `mysql-prod-data` שומרים את נתוני MySQL מחוץ למחזור החיים של container בודד.
+### 22.3 התקנת Docker ו־Compose על שרת חדש
 
-### 29.3 Deployment שנכשל
+שרת EC2 חדש אינו מגיע מוכן להרצת Docker Compose. הפתרון הוא `user_data.sh`, שמתקין Docker, Docker Compose plugin ו־Git בזמן הקמת השרת.
 
-בעיה: image חדש עלול לעלות אך לא לעבוד.  
-פתרון: `ci-cd.yml` שומר `PREVIOUS_IMAGE_TAG`, מריץ health check, ומבצע rollback אם הבדיקה נכשלת.
+### 22.4 Terraform state
 
-### 29.4 GitHub Actions runners זמניים
+כאשר Terraform רץ מתוך GitHub Actions, לא ניתן להסתמך על state מקומי. הפתרון הוא S3 remote backend, ששומר את state תחת `prod/terraform.tfstate` ומאפשר להרצות שונות לעבוד מול אותו מקור אמת.
 
-בעיה: runner של GitHub Actions לא שומר קבצי Terraform state בין הרצות.  
-פתרון: S3 remote backend שומר state ב־`prod/terraform.tfstate`.
+### 22.5 Health check ו־Rollback
 
-### 29.5 ניטור תקלות בסיסי
-
-בעיה: אם האפליקציה מפסיקה להגיב, צריך זיהוי ותיעוד.  
-פתרון: `monitoring/health_check.sh` רץ דרך cron, בודק `/health`, מתעד כשל ומנסה restart.
+Deployment עלול להיכשל גם אם image נבנה בהצלחה. לכן ה־pipeline מבצע בדיקת `/health` אחרי ההרצה. אם הבדיקה נכשלת, ה־workflow מחזיר את `IMAGE_TAG` הקודם ומפעיל מחדש את Docker Compose.
 
 ---
 
-## 30. אבטחה ו־Secrets
+## 23. אבטחה ו־Secrets
 
-### 30.1 Environment variables
+הפרויקט משתמש בכמה שכבות להגנה על מידע רגיש ועל תהליך הפריסה.
 
-| Variable | Purpose | Found in |
-| --- | --- | --- |
-| `APP_ENV` | מצב הרצה: development או production | `.env.example`, Compose |
-| `IMAGE_TAG` | בחירת Docker image ב־production | `.env.example`, `docker-compose.prod.yml`, CI/CD |
-| `SESSION_COOKIE_SECURE` | קביעת secure cookie | `.env.example`, `app.py`, production Compose |
-| `ADMIN_PASSWORD` | סיסמת admin | `.env.example`, `app.py`, Compose |
-| `SECRET_KEY` | חתימת session של Flask | `.env.example`, `app.py`, Compose |
-| `DB_HOST` | שם שירות MySQL | Compose |
-| `DB_USER` | משתמש MySQL | `.env.example`, Compose |
-| `DB_PASSWORD` | סיסמת MySQL | `.env.example`, Compose |
-| `DB_NAME` | שם מסד הנתונים | `.env.example`, Compose |
-| `MYSQL_ROOT_PASSWORD` | סיסמת root של MySQL | `.env.example`, Compose |
-| `TESTING` | הפעלת מצב בדיקות | `tests/test_health.py`, `app.py` |
+### 23.1 קובצי סביבה
 
-### 30.2 GitHub Secrets
+הקובץ `.env.example` מציג את המשתנים הדרושים, אך ערכים אמיתיים נשמרים בקובץ `.env` מקומי שאינו נכנס ל־Git.
 
-| Secret | Purpose | Workflow |
-| --- | --- | --- |
-| `DOCKERHUB_USERNAME` | Login ל־Docker Hub | `ci-cd.yml` |
-| `DOCKERHUB_TOKEN` | Token ל־Docker Hub | `ci-cd.yml` |
-| `EC2_HOST` | כתובת שרת EC2 | `ci-cd.yml` |
-| `EC2_USER` | משתמש SSH | `ci-cd.yml` |
-| `EC2_SSH_KEY` | מפתח SSH פרטי | `ci-cd.yml` |
-| `AWS_ACCESS_KEY_ID` | AWS credentials | `terraform.yml`, `terraform-destroy.yml` |
-| `AWS_SECRET_ACCESS_KEY` | AWS credentials | `terraform.yml`, `terraform-destroy.yml` |
-| `AWS_REGION` | Region ל־Terraform workflow | `terraform.yml` |
-| `TF_VAR_allowed_ssh_cidr` | CIDR ל־SSH | `terraform.yml` |
-| `TF_VAR_allowed_grafana_cidr` | CIDR ל־Grafana | `terraform.yml` |
-| `TF_VAR_existing_key_pair_name` | Key Pair קיים | `terraform.yml` |
-| `TF_VAR_existing_eip_allocation_id` | Elastic IP קיים אופציונלי | `terraform.yml` |
-| `TF_VAR_ALLOWED_SSH_CIDR` | CIDR ל־destroy workflow | `terraform-destroy.yml` |
-| `TF_VAR_ALLOWED_GRAFANA_CIDR` | CIDR ל־destroy workflow | `terraform-destroy.yml` |
-| `TF_VAR_EXISTING_KEY_PAIR_NAME` | Key Pair ל־destroy workflow | `terraform-destroy.yml` |
+משתנים מרכזיים:
 
-### 30.3 הגנות שנמצאו בפועל
+- `ADMIN_PASSWORD`
+- `SECRET_KEY`
+- `DB_USER`
+- `DB_PASSWORD`
+- `DB_NAME`
+- `MYSQL_ROOT_PASSWORD`
+- `IMAGE_TAG`
 
-- `.env` מוחרג ב־`.gitignore`.
-- `*.tfstate`, `*.tfvars`, מפתחות SSH ו־private keys מוחרגים ב־`.gitignore`.
-- production דורש `ADMIN_PASSWORD` ו־`SECRET_KEY`.
-- session cookies מוגדרים עם `HTTPOnly` ו־`SameSite=Lax`.
-- `SESSION_COOKIE_SECURE` מופעל לפי environment.
-- `compare_digest` משמש להשוואת סיסמת admin.
-- Security workflow כולל Gitleaks, Bandit, pip-audit, Hadolint ו־Trivy.
+### 23.2 GitHub Secrets
 
-### 30.4 רכיבי אבטחה שלא נמצאו
+GitHub Actions משתמש ב־GitHub Secrets כדי לאחסן מידע רגיש:
 
-לא נמצא בקבצי הפרויקט:
+- `DOCKERHUB_USERNAME`
+- `DOCKERHUB_TOKEN`
+- `EC2_HOST`
+- `EC2_USER`
+- `EC2_SSH_KEY`
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+- `AWS_REGION`
 
-- HTTPS certificate.
-- Domain.
-- Load Balancer.
-- WAF.
-- Kubernetes secrets.
-- External secret manager.
-- RDS.
+### 23.3 Flask security configuration
+
+בקוד האפליקציה מוגדרות הגנות session:
+
+- `SESSION_COOKIE_HTTPONLY=True`
+- `SESSION_COOKIE_SAMESITE="Lax"`
+- `SESSION_COOKIE_SECURE` לפי environment
+
+בנוסף, בסביבת production נדרש להגדיר `SECRET_KEY` ו־`ADMIN_PASSWORD` תקינים.
+
+### 23.4 Security Groups
+
+גישה ל־SSH, Grafana ו־Prometheus צריכה להיות מוגבלת באמצעות CIDR מתאים. פורטים תפעוליים אינם מיועדים להיות פתוחים לכל משתמש באינטרנט.
+
+### 23.5 DevSecOps checks
+
+ה־security workflow מוסיף בדיקות אוטומטיות על secrets, קוד Python, dependencies, Dockerfile ו־Docker image. כך נוצרת שכבת בקרה נוספת לפני הפצה או שימוש ב־image.
 
 ---
 
-## 31. סיכום ומסקנות
+## 24. סיכום ושיפורים עתידיים
 
-הפרויקט מציג מערכת Web מלאה בקנה מידה מתאים לפרויקט גמר DevOps. הוא משלב אפליקציה, מסד נתונים, containers, reverse proxy, CI/CD, registry, ענן, תשתית כקוד וניטור.
+הפרויקט מציג מחזור DevOps מלא עבור אפליקציית Web מבוססת Flask ו־MySQL. הקוד מנוהל ב־GitHub, נבדק באמצעות pytest, נארז באמצעות Docker, מפורסם ל־Docker Hub, נפרס ל־AWS EC2 ומנוטר באמצעות Prometheus ו־Grafana. בנוסף, Terraform מאפשר לנהל את התשתית בצורה חוזרת ומתועדת.
 
-הנקודה החשובה ביותר בפרויקט היא ההפרדה בין שכבות:
+הערך המרכזי של הפרויקט הוא החיבור בין פיתוח לבין תפעול. כל שינוי קוד יכול לעבור תהליך מסודר של בדיקה, בנייה, פרסום, פריסה ואימות.
 
-- Flask מטפל בלוגיקה העסקית.
-- MySQL שומר נתונים.
-- Docker ו־Docker Compose מריצים את השירותים.
-- Nginx מקבל תעבורה חיצונית ומעביר לאפליקציה.
-- GitHub Actions בונה, בודק ומפרסם גרסאות.
-- Docker Hub משמש registry.
-- EC2 משמש שרת הרצה.
-- Terraform יוצר תשתית.
-- Prometheus ו־Grafana מספקים ניטור.
+שיפורים עתידיים אפשריים:
 
-הפרויקט אינו מציג את עצמו כגדול יותר ממה שהוא. לא נמצאו Kubernetes, Jenkins, Load Balancer, HTTPS, Domain, REST API אפליקטיבי או RDS, ולכן הם אינם חלק מהתיאור הרשמי של המערכת.
+- הוספת HTTPS ותעודת SSL.
+- חיבור domain קבוע.
+- יצירת dashboards מותאמים אישית ב־Grafana.
+- הקשחת הרשאות IAM עבור Terraform ו־GitHub Actions.
+- העברת מסד הנתונים לשירות מנוהל כגון RDS.
+- חלוקת Terraform למודולים.
+- הרחבת בדיקות end-to-end.
+- הוספת alerting ל־Prometheus/Grafana.
 
-מבחינת למידה, הפרויקט מדגים תהליך production-style אמיתי: שינוי קוד נכנס ל־GitHub, נבדק, נארז כ־Docker image, נשלח ל־Docker Hub, נמשך ל־EC2, מורץ ב־Docker Compose, ונבדק דרך health check. במקרה כשל קיים rollback. בנוסף קיימת תשתית Terraform וניטור בסיסי.
+שיפורים אלה יכולים להרחיב את הפרויקט בעתיד, אך המבנה הנוכחי כבר מדגים בצורה מלאה את עקרונות DevOps המרכזיים.
 
 ---
 
-## 32. נספחים
+## 25. נספחים
 
-### 32.1 AWS resources
+### 25.1 פקודות חשובות
 
-| Resource | Created by Terraform | Notes |
-| --- | --- | --- |
-| EC2 Instance | Yes | מריץ Docker Compose |
-| Security Group | Yes | SSH, HTTP, Grafana, Prometheus |
-| Elastic IP | Yes, unless existing ID is provided | מחובר ל־EC2 |
-| Key Pair | Yes, if existing key pair is not provided | מבוסס על public key מקומי |
-| S3 backend | Referenced by Terraform backend | state ב־`prod/terraform.tfstate`; bucket צריך להיות קיים לפני init |
-| RDS | No | לא נמצא בקבצי הפרויקט |
-| Load Balancer | No | לא נמצא בקבצי הפרויקט |
-
-### 32.2 Important commands
-
-| Command | Purpose |
+| Command | תפקיד |
 | --- | --- |
-| `docker compose up --build` | הרצת stack מקומי |
-| `docker compose --env-file .env -f docker-compose.prod.yml up -d` | הרצת production stack |
-| `docker compose --env-file .env -f docker-compose.prod.yml pull app` | משיכת image חדש לאפליקציה |
-| `curl http://localhost/health` | בדיקת health מקומית על השרת |
-| `curl http://localhost:5001/health` | בדיקת health דרך מיפוי פורט מקומי |
+| `docker compose up --build` | הרצת סביבת development |
+| `docker compose --env-file .env -f docker-compose.prod.yml up -d` | הרצת סביבת production-style |
+| `docker compose --env-file .env -f docker-compose.prod.yml pull app` | משיכת image חדש |
+| `curl http://localhost/health` | בדיקת זמינות מתוך השרת |
 | `pytest` | הרצת בדיקות |
-| `docker logs --tail=120 flask_app_prod` | צפייה בלוגים של Flask container |
-| `docker logs --tail=80 nginx_proxy_prod` | צפייה בלוגים של Nginx container |
+| `docker logs --tail=120 flask_app_prod` | צפייה בלוגים של האפליקציה |
+| `docker logs --tail=80 nginx_proxy_prod` | צפייה בלוגים של Nginx |
 | `docker inspect flask_app_prod --format='{{.Config.Image}}'` | בדיקת image שרץ בפועל |
-| `terraform init` | אתחול Terraform backend/providers |
+| `terraform init` | אתחול Terraform |
 | `terraform fmt -check` | בדיקת formatting |
 | `terraform validate` | בדיקת תקינות Terraform |
-| `terraform plan` | יצירת תכנית שינויים |
-| `terraform apply` | החלת תשתית |
+| `terraform plan` | תכנון שינויי תשתית |
+| `terraform apply` | החלת שינויי תשתית |
 
-### 32.3 קבצים שלא כדאי להעלות ל־Git
+### 25.2 מקומות לשילוב צילומי מסך
 
-לפי `.gitignore`, הקבצים הבאים מוחרגים:
+ניתן להוסיף למסמך הסופי צילומי מסך במקומות הבאים:
 
-- `.env`
-- `*.env`, למעט `.env.example`
-- `*.tfstate`
-- `*.tfvars`
-- `*.pem`
-- `*.key`
-- `id_rsa`
-- `id_ed25519`
-- cache ותיקיות וירטואליות של Python
+- עמוד הבית של האפליקציה.
+- עמוד פרטי משחק.
+- עמוד אישור הזמנה.
+- מסך admin bookings.
+- GitHub Actions successful run.
+- Docker Hub repository.
+- Grafana dashboard.
+- Prometheus targets.
+- AWS EC2 instance.
+- Terraform plan/apply output.
 
-### 32.4 רשימת רכיבים שלא זוהו בפועל
+### 25.3 קטעי קוד נבחרים
 
-| Component | Status |
+#### Health endpoint
+
+```python
+@app.route('/health', methods=["GET"])
+def health():
+    return {"status": "ok"}, 200
+```
+
+קטע זה מאפשר ל־CI/CD ולסקריפט health check לוודא שהאפליקציה זמינה.
+
+#### Metrics endpoint
+
+```python
+@app.route('/metrics', methods=["GET"])
+def metrics():
+    return generate_latest(), 200, {"Content-Type": CONTENT_TYPE_LATEST}
+```
+
+קטע זה מאפשר ל־Prometheus למשוך metrics מהאפליקציה.
+
+#### Production image
+
+```yaml
+image: shlomodevops/devops-final-projectshlomo:${IMAGE_TAG:-latest}
+```
+
+קטע זה מאפשר לשרת להריץ image לפי תג שנקבע ב־CI/CD.
+
+#### Terraform backend
+
+```hcl
+backend "s3" {
+  bucket       = "seat-booking-devops-tfstate-shlomo-2026"
+  key          = "prod/terraform.tfstate"
+  region       = "eu-north-1"
+  use_lockfile = true
+}
+```
+
+קטע זה מגדיר state מרוחק וקבוע עבור Terraform.
+
+### 25.4 הסבר קצר על workflows
+
+| Workflow | תפקיד |
 | --- | --- |
-| Kubernetes | לא נמצא בקבצי הפרויקט |
-| Jenkins | לא נמצא בקבצי הפרויקט |
-| AWS Load Balancer | לא נמצא בקבצי הפרויקט |
-| HTTPS | לא נמצא בקבצי הפרויקט |
-| Domain | לא נמצא בקבצי הפרויקט |
-| REST API application endpoints | לא נמצא בקבצי הפרויקט |
-| AWS RDS | לא נמצא בקבצי הפרויקט |
-| External Secrets Manager | לא נמצא בקבצי הפרויקט |
+| `ci-cd.yml` | בדיקות, build, push ל־Docker Hub ו־deployment ל־EC2 |
+| `security.yml` | בדיקות DevSecOps |
+| `terraform.yml` | בדיקת Terraform ו־apply ידני |
+| `terraform-destroy.yml` | מחיקת תשתית בהרצה ידנית מבוקרת |
+
+### 25.5 פקודות Terraform
+
+```bash
+cd terraform
+terraform init
+terraform fmt -check
+terraform validate
+terraform plan
+terraform apply
+```
+
+פקודות אלו משמשות לבדיקה ולהחלה של הגדרות התשתית. בסביבת GitHub Actions הן מבוצעות מתוך workflow ייעודי.
 

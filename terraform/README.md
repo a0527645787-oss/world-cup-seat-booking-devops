@@ -19,6 +19,14 @@ Terraform creates infrastructure only. It does not replace the existing GitHub A
 
 The repository clone is only preparation. Terraform does not create `.env` and does not run the production application deployment.
 
+## Remote State
+
+Terraform state is stored in S3 at `prod/terraform.tfstate` in the configured backend bucket. The state file maps Terraform resources to real AWS resource IDs, which lets Terraform update existing Terraform-managed resources when state already exists.
+
+GitHub Actions needs remote state because workflow runners are temporary and do not keep local Terraform state between runs. The S3 backend uses `use_lockfile = true` to prevent concurrent Terraform runs from modifying the same state at the same time.
+
+Because Terraform state is now persistent, `terraform destroy` can be safely added later when the project needs it.
+
 ## Terraform vs GitHub Actions
 
 Terraform creates the server infrastructure:
