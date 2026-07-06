@@ -331,44 +331,16 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://{}:{}@{}/{}'.format(
 התרשים מציג את הקשרים בין הישויות המרכזיות במערכת.
 
 ```mermaid
-erDiagram
-    STADIUMS ||--o{ MATCHES : hosts
-    MATCHES ||--o{ SEAT_TYPES : offers
-    MATCHES ||--o{ BOOKINGS : has
-    SEAT_TYPES ||--o{ BOOKINGS : selected
+flowchart LR
+    Stadiums["STADIUMS<br/>id<br/>name<br/>city<br/>capacity"]
+    Matches["MATCHES<br/>id<br/>match_number<br/>stage<br/>home_team<br/>away_team<br/>match_date<br/>stadium_id"]
+    SeatTypes["SEAT_TYPES<br/>id<br/>name<br/>price<br/>total_seats<br/>match_id"]
+    Bookings["BOOKINGS<br/>id<br/>booking_code<br/>customer_name<br/>customer_email<br/>seats_count<br/>is_cancelled<br/>match_id<br/>seat_type_id"]
 
-    STADIUMS {
-        int id
-        string name
-        string city
-        int capacity
-    }
-    MATCHES {
-        int id
-        int match_number
-        string stage
-        string home_team
-        string away_team
-        datetime match_date
-        int stadium_id
-    }
-    SEAT_TYPES {
-        int id
-        string name
-        float price
-        int total_seats
-        int match_id
-    }
-    BOOKINGS {
-        int id
-        string booking_code
-        string customer_name
-        string customer_email
-        int seats_count
-        bool is_cancelled
-        int match_id
-        int seat_type_id
-    }
+    Stadiums -->|"one stadium hosts many matches"| Matches
+    Matches -->|"one match offers many seat types"| SeatTypes
+    Matches -->|"one match has many bookings"| Bookings
+    SeatTypes -->|"one seat type can be selected by many bookings"| Bookings
 ```
 
 ה־volume של MySQL שומר את הנתונים מחוץ למחזור החיים של ה־container. כך, גם אם container נמחק ונוצר מחדש, נתוני ההזמנות נשמרים.
@@ -679,7 +651,7 @@ app.config.update(
 - בדיקת נתוני seed.
 - בדיקת מחירים לפי שלבי הטורניר.
 
-דוגמה:
+### בדיקת health endpoint
 
 ```python
 def test_health_route(client):
@@ -689,77 +661,169 @@ def test_health_route(client):
     assert response.get_json() == {"status": "ok"}
 ```
 
-הבדיקה חשובה משום שאותו endpoint משמש גם לאימות deployment.
+בדיקה זו מוודאת שה־endpoint הטכני `/health` מחזיר תשובה תקינה. אותו endpoint משמש גם בתהליך ה־deployment כדי לבדוק שהאפליקציה עלתה בהצלחה.
 
-להלן תקציר קוד קצר של כלל הבדיקות המרכזיות בקובץ. הקטע מציג את שמות הבדיקות ואת סוג האימות שכל אחת מבצעת, בלי להעמיס את כל קובץ הבדיקות:
+### בדיקת עמוד הבית
 
 ```python
-def test_health_route(client):
-    assert client.get("/health").get_json() == {"status": "ok"}
-
 def test_home_page_returns_200(client):
     response = client.get("/")
+
     assert response.status_code == 200
     assert b"World Cup 2026 Seat Booking" in response.data
+    assert b"Mexico" in response.data
+    assert b"South Africa" in response.data
+```
 
+בדיקה זו מוודאת שעמוד הבית נטען בהצלחה ומציג תוכן מרכזי מתוך נתוני המשחקים. כך ניתן לוודא שגם טעינת הנתונים וגם רינדור התבנית עובדים.
+
+### בדיקת פרטי משחק
+
+```python
 def test_match_detail_page_returns_200(client):
-    response = client.get(f"/matches/{Match.query.first().id}")
+    with app.app_context():
+        match = Match.query.first()
+
+    response = client.get(f"/matches/{match.id}")
+
     assert response.status_code == 200
     assert b"Book seats" in response.data
+```
 
+בדיקה זו מוודאת שניתן לפתוח עמוד פרטי משחק קיים ושמופיע בו אזור הזמנת מושבים.
+
+### בדיקת ניהול הזמנה
+
+```python
 def test_manage_booking_page_returns_200(client):
-    assert client.get("/manage-booking").status_code == 200
+    response = client.get("/manage-booking")
 
-def test_about_page_returns_200(client):
-    assert client.get("/about").status_code == 200
+    assert response.status_code == 200
+    assert b"Manage your booking" in response.data
+```
 
+בדיקה זו מוודאת שעמוד ניהול ההזמנה נפתח ומוכן לקבל קוד הזמנה ואימייל.
+
+### בדיקת חיפוש הזמנה לא תקינה
+
+```python
 def test_invalid_booking_lookup_shows_error(client):
-    response = client.post("/manage-booking", data={...})
-    assert b"Booking was not found" in response.data
+    response = client.post(
+        "/manage-booking",
+        data={
+            "booking_code": "BAD-CODE",
+            "customer_email": "missing@example.com",
+        },
+    )
 
+    assert response.status_code == 200
+    assert b"Booking was not found" in response.data
+```
+
+בדיקה זו בודקת תרחיש משתמש שבו הוזנו פרטי הזמנה שאינם מתאימים להזמנה קיימת. המערכת מציגה הודעת שגיאה במקום להעביר לעמוד הזמנה.
+
+### בדיקת צפייה בהזמנה קיימת
+
+```python
 def test_booking_detail_page_returns_200(client):
     response = client.get("/bookings/TEST-CODE-123")
+
+    assert response.status_code == 200
     assert b"TEST-CODE-123" in response.data
+    assert b"Active" in response.data
+```
 
+בדיקה זו מוודאת שניתן לפתוח הזמנה קיימת לפי קוד הזמנה, ושהסטטוס מוצג כפעיל.
+
+### בדיקת ביטול הזמנה
+
+```python
 def test_cancel_route_sets_booking_cancelled(client):
-    client.post("/bookings/TEST-CODE-123/cancel")
-    booking = Booking.query.filter_by(booking_code="TEST-CODE-123").first()
-    assert booking.is_cancelled is True
+    response = client.post("/bookings/TEST-CODE-123/cancel")
 
-def test_admin_bookings_page_renders_statistics(client):
-    response = client.get("/admin/bookings")
-    assert b"Match statistics" in response.data
+    assert response.status_code == 302
 
+    with app.app_context():
+        booking = Booking.query.filter_by(booking_code="TEST-CODE-123").first()
+        assert booking.is_cancelled is True
+```
+
+בדיקה זו מוודאת שביטול הזמנה משנה את השדה `is_cancelled` במסד הנתונים. ההזמנה נשמרת, אך מסומנת כמבוטלת.
+
+### בדיקות אזור הניהול
+
+```python
 def test_admin_bookings_redirects_when_not_logged_in(client):
-    assert client.get("/admin/bookings").status_code == 302
+    response = client.get("/admin/bookings")
 
-def test_admin_login_rejects_invalid_password(client):
-    response = client.post("/admin/login", data={"password": "wrong-password"})
-    assert b"Invalid admin password" in response.data
+    assert response.status_code == 302
+    assert response.headers["Location"].endswith("/admin/login")
+
 
 def test_admin_login_accepts_configured_password(client):
     response = client.post("/admin/login", data={"password": ADMIN_PASSWORD})
+
     assert response.status_code == 302
-
-def test_admin_logout_clears_session(client):
-    assert client.get("/admin/logout").status_code == 302
-
-def test_match_model_supports_world_cup_schedule_fields(client):
-    match = Match.query.filter_by(match_number=1).first()
-    assert match.stage == "Group Stage"
-
-def test_world_cup_seed_creates_matches_without_duplicates(client):
-    seed_world_cup_2026_data(db, Stadium, Match, SeatType)
-    assert Match.query.filter(Match.match_number.isnot(None)).count() == 104
-
-def test_stage_based_pricing_is_seeded(client):
-    assert final_prices["VIP"] == STAGE_PRICES["Final"]["VIP"]
-
-def test_seed_has_group_stage_and_knockout_placeholder(client):
-    assert knockout_match.home_placeholder is True
+    assert response.headers["Location"].endswith("/admin/bookings")
 ```
 
-הבדיקות מכסות routes פשוטים, פעולות משתמש, אזור ניהול ותקינות נתוני seed. לכן הן משתלבות היטב בשלב ה־CI לפני בניית Docker image.
+בדיקות אלו מוודאות שאזור הניהול מוגן מפני כניסה ללא התחברות, ושסיסמת מנהל תקינה מאפשרת מעבר לעמוד הניהול.
+
+### בדיקת סטטיסטיקות ניהול
+
+```python
+def test_admin_bookings_page_renders_statistics(client):
+    with client.session_transaction() as sess:
+        sess["admin_logged_in"] = True
+
+    response = client.get("/admin/bookings")
+
+    assert response.status_code == 200
+    assert b"Match statistics" in response.data
+```
+
+בדיקה זו מוודאת שאחרי התחברות מנהל ניתן לצפות במסך הניהול ובסטטיסטיקות המשחקים.
+
+### בדיקת נתוני World Cup
+
+```python
+def test_world_cup_seed_creates_matches_without_duplicates(client):
+    with app.app_context():
+        db.drop_all()
+        db.create_all()
+        seed_world_cup_2026_data(db, Stadium, Match, SeatType)
+
+        first_count = Match.query.filter(Match.match_number.isnot(None)).count()
+
+        seed_world_cup_2026_data(db, Stadium, Match, SeatType)
+        second_count = Match.query.filter(Match.match_number.isnot(None)).count()
+
+        assert first_count == 104
+        assert second_count == 104
+```
+
+בדיקה זו מוודאת שנתוני ה־seed יוצרים 104 משחקים, ושקריאה חוזרת לפונקציית ה־seed אינה יוצרת כפילויות.
+
+### בדיקת מחירים לפי שלב בטורניר
+
+```python
+def test_stage_based_pricing_is_seeded(client):
+    with app.app_context():
+        db.drop_all()
+        db.create_all()
+        seed_world_cup_2026_data(db, Stadium, Match, SeatType)
+
+        group_match = Match.query.filter_by(stage="Group Stage").first()
+        final_match = Match.query.filter_by(stage="Final").first()
+
+        group_prices = {seat.name: seat.price for seat in group_match.seat_types}
+        final_prices = {seat.name: seat.price for seat in final_match.seat_types}
+
+        assert group_prices["Regular"] == STAGE_PRICES["Group Stage"]["Regular"]
+        assert final_prices["VIP"] == STAGE_PRICES["Final"]["VIP"]
+```
+
+בדיקה זו מוודאת שסוגי המושבים מקבלים מחירים שונים לפי שלב הטורניר. כך ניתן לבדוק שהלוגיקה העסקית של המחירים נטענת בצורה נכונה.
 
 ---
 
