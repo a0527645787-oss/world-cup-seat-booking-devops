@@ -206,7 +206,7 @@ KNOCKOUT_MATCHES = [
     (100, "Quarter-finals", "2026-07-11", "20:00", "Winner Match 95", "Winner Match 96", "Kansas City Stadium"),
     (101, "Semi-finals", "2026-07-14", "14:00", "Winner Match 97", "Winner Match 98", "Dallas Stadium"),
     (102, "Semi-finals", "2026-07-15", "15:00", "Winner Match 99", "Winner Match 100", "Atlanta Stadium"),
-    (103, "Third-place match", "2026-07-18", "17:00", "Loser Match 101", "Loser Match 102", "Miami Stadium"),
+    (103, "Third-place match", "2026-07-18", "17:00", "France", "England", "Miami Stadium"),
     (104, "Final", "2026-07-19", "15:00", "Winner Match 101", "Winner Match 102", "New York New Jersey Stadium"),
 ]
 
