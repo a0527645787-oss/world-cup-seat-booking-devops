@@ -73,6 +73,46 @@ jobs:
       - name: Build Docker image
         run: docker build -t seat-booking-app:ci .
 
+      # Run the tests and a live smoke check against the exact image that will be pushed.
+      - name: Test and run application container
+        run: |
+          docker run --rm \
+            --env TESTING=true \
+            --env PYTHONPATH=/app \
+            seat-booking-app:ci \
+            pytest -q
+
+          docker run --detach \
+            --name seat-booking-app-ci \
+            --env TESTING=true \
+            --publish 127.0.0.1:5000:5000 \
+            seat-booking-app:ci
+
+          cleanup() {
+            docker rm --force seat-booking-app-ci >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+
+          for attempt in $(seq 1 12); do
+            if curl --fail --silent --show-error http://127.0.0.1:5000/health; then
+              echo "Container smoke test passed"
+              exit 0
+            fi
+
+            if [ "$(docker inspect --format='{{.State.Running}}' seat-booking-app-ci)" != "true" ]; then
+              echo "Application container stopped unexpectedly"
+              docker logs seat-booking-app-ci
+              exit 1
+            fi
+
+            echo "Waiting for application container (attempt ${attempt}/12)..."
+            sleep 5
+          done
+
+          echo "Application container did not become healthy"
+          docker logs seat-booking-app-ci
+          exit 1
+
       # בדיקת DevSecOps: סריקת Docker image לאיתור vulnerabilities ברמת image.
       - name: Run Trivy Docker image scan
         uses: aquasecurity/trivy-action@master
