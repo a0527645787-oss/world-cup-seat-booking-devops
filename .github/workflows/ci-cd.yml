@@ -5,83 +5,125 @@ on:
     branches:
       - main
     paths-ignore:
-      - "README.md"
       - "docs/**"
       - "terraform/**"
-      - "terraform/README.md"
+      - ".gitignore"
+      - "*.md"
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - "docs/**"
+      - "terraform/**"
       - ".gitignore"
       - "*.md"
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
-  build_security_push:
-    name: Test, security scan, build, and push
+  tests:
+    name: Tests with MySQL
     runs-on: ubuntu-latest
-    outputs:
-      short_sha: ${{ steps.image_tag.outputs.short_sha }}
+    env:
+      PYTHONPATH: .
+      TESTING: "true"
+      TEST_DATABASE_URL: mysql+pymysql://seat_booking_test:test-only-password@127.0.0.1:3306/seat_booking_test
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: test-root-password
+          MYSQL_DATABASE: seat_booking_test
+          MYSQL_USER: seat_booking_test
+          MYSQL_PASSWORD: test-only-password
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -u seat_booking_test -ptest-only-password"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
 
     steps:
-      # בדיקה ראשונה: הורדת קוד הפרויקט אל GitHub Actions runner.
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      # הכנת סביבת Python להרצת האפליקציה, הבדיקות וכלי האבטחה.
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      # התקנת התלויות שמוגדרות בקובץ requirements.txt.
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # בדיקות Testing: הרצת pytest כדי לוודא שהאפליקציה עובדת לפני בניית image.
-      - name: Run Python tests
-        env:
-          PYTHONPATH: .
+      - name: Verify MySQL test connection
+        run: |
+          python -c "from app import app, db; from sqlalchemy import text; app.app_context().push(); assert db.engine.dialect.name == 'mysql'; db.session.execute(text('SELECT 1')); print('MySQL test connection verified')"
+
+      - name: Run Python tests against MySQL
         run: pytest
 
-      # בדיקת DevSecOps: סריקה שמוודאת שלא הוכנסו secrets לריפוזיטורי.
+  security:
+    name: Security checks
+    runs-on: ubuntu-latest
+    needs: tests
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies and security tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install bandit pip-audit
+
       - name: Run Gitleaks secret scan
         uses: gitleaks/gitleaks-action@v2
 
-      # בדיקת DevSecOps: סריקת קוד Python לאיתור בעיות אבטחה משמעותיות.
       - name: Run Bandit Python SAST scan
         run: |
-          pip install bandit
           bandit -r . \
             --severity-level high \
             -x ./tests,./terraform,./.venv,./venv,./env,./.git,**/__pycache__
 
-      # בדיקת DevSecOps: סריקת חבילות Python מול vulnerabilities מוכרות.
       - name: Run pip-audit dependency scan
-        run: |
-          pip install pip-audit
-          pip-audit -r requirements.txt
+        run: pip-audit -r requirements.txt
 
-      # בדיקת DevSecOps: בדיקת איכות ואבטחה של Dockerfile.
       - name: Run Hadolint Dockerfile scan
         uses: hadolint/hadolint-action@v3.1.0
         with:
           dockerfile: Dockerfile
 
-      # בניית Docker image: יצירת image שניתן לבדוק, לסרוק ולפרסם ל-registry.
+  build_and_verify:
+    name: Build and verify image
+    runs-on: ubuntu-latest
+    needs: security
+    outputs:
+      short_sha: ${{ steps.image_tag.outputs.short_sha }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Build Docker image
         run: docker build -t seat-booking-app:ci .
 
-      # Run the tests and a live smoke check against the exact image that will be pushed.
-      - name: Test and run application container
+      - name: Run application container smoke test
         run: |
-          docker run --rm \
-            --env TESTING=true \
-            --env PYTHONPATH=/app \
-            seat-booking-app:ci \
-            pytest -q
-
           docker run --detach \
             --name seat-booking-app-ci \
             --env TESTING=true \
@@ -113,7 +155,6 @@ jobs:
           docker logs seat-booking-app-ci
           exit 1
 
-      # בדיקת DevSecOps: סריקת Docker image לאיתור vulnerabilities ברמת image.
       - name: Run Trivy Docker image scan
         uses: aquasecurity/trivy-action@master
         with:
@@ -122,29 +163,61 @@ jobs:
           exit-code: "1"
           ignore-unfixed: true
 
-      # יצירת tag לפי commit קצר, כדי לאפשר זיהוי גרסאות ו-rollback.
       - name: Set Docker image tag
         id: image_tag
-        run: |
-          SHORT_SHA="${GITHUB_SHA::7}"
-          echo "SHORT_SHA=${SHORT_SHA}" >> "$GITHUB_ENV"
-          echo "short_sha=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+        run: echo "short_sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
 
-      # התחברות ל-Docker Hub באמצעות GitHub Secrets.
+      - name: Save Docker image
+        run: docker save seat-booking-app:ci --output seat-booking-app-ci.tar
+
+      - name: Upload verified Docker image
+        uses: actions/upload-artifact@v4
+        with:
+          name: seat-booking-app-${{ steps.image_tag.outputs.short_sha }}
+          path: seat-booking-app-ci.tar
+          retention-days: 1
+          compression-level: 0
+          if-no-files-found: error
+
+  push_image:
+    name: Push image to Docker Hub
+    runs-on: ubuntu-latest
+    needs: build_and_verify
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    outputs:
+      short_sha: ${{ steps.image_tag.outputs.short_sha }}
+
+    steps:
+      - name: Download verified Docker image
+        uses: actions/download-artifact@v4
+        with:
+          name: seat-booking-app-${{ needs.build_and_verify.outputs.short_sha }}
+
+      - name: Load Docker image
+        run: docker load --input seat-booking-app-ci.tar
+
+      - name: Forward Docker image tag
+        id: image_tag
+        run: echo "short_sha=${{ needs.build_and_verify.outputs.short_sha }}" >> "$GITHUB_OUTPUT"
+
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # תיוג image גם כ-latest וגם לפי short SHA.
       - name: Tag Docker image
+        env:
+          SHORT_SHA: ${{ needs.build_and_verify.outputs.short_sha }}
         run: |
           docker tag seat-booking-app:ci shlomodevops/devops-final-projectshlomo:latest
           docker tag seat-booking-app:ci shlomodevops/devops-final-projectshlomo:${SHORT_SHA}
 
-      # דחיפה ל-registry: פרסום ה-image ל-Docker Hub.
       - name: Push Docker image
+        env:
+          SHORT_SHA: ${{ needs.build_and_verify.outputs.short_sha }}
         run: |
           docker push shlomodevops/devops-final-projectshlomo:latest
           docker push shlomodevops/devops-final-projectshlomo:${SHORT_SHA}
@@ -152,11 +225,10 @@ jobs:
   deploy:
     name: Deploy to EC2
     runs-on: ubuntu-latest
-    needs: build_security_push
+    needs: push_image
     if: github.ref == 'refs/heads/main'
 
     steps:
-      # Deploy: התחברות ל-EC2, משיכת image חדש, הרצת Docker Compose ובדיקת health.
       - name: Deploy production stack over SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -169,12 +241,13 @@ jobs:
 
             cd ~/seat-booking-devops
 
-            echo "Current server commit before pull:"
+            echo "Current server commit before sync:"
             git rev-parse --short HEAD
 
-            git pull origin main
+            git fetch origin main
+            git reset --hard origin/main
 
-            IMAGE_TAG="${{ needs.build_security_push.outputs.short_sha }}"
+            IMAGE_TAG="${{ needs.push_image.outputs.short_sha }}"
             echo "NEW_IMAGE_TAG=${IMAGE_TAG}"
 
             if [ ! -f .env ]; then

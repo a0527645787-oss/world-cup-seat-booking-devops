@@ -56,7 +56,10 @@ app.secret_key = get_config_value(
     unsafe_value="dev-secret-key",
 )
 if app.config["TESTING"]:
-    app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///:memory:"
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv(
+        "TEST_DATABASE_URL",
+        "sqlite:///:memory:",
+    )
 else:
     app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://{}:{}@{}/{}'.format(
         os.getenv('DB_USER', 'flask'),
